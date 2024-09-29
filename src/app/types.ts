@@ -1,5 +1,4 @@
 
-
 export type Metric = {
     code: string
     metrics: MetricValue[]
@@ -10,7 +9,7 @@ export type MetricValue = {
     value: number
 }
 
-export enum RequestCubeCode {
+export enum RequestCubeDeepCode {
     ALL,
     ALL_TB,
     TB
@@ -21,14 +20,23 @@ export enum SortDirection {
     DESC
 }
 
-type RequestCubeCodeKeys = keyof typeof RequestCubeCode;
+export enum Projection {
+    DEEP,
+    LOOK_UP
+}
 
-export type RequestCube = {
+type RequestCubeDeepCodeKeys = keyof typeof RequestCubeDeepCode;
+
+export type RequestCubeDeep = {
     label: string
-    code: RequestCubeCodeKeys
+    code: RequestCubeDeepCodeKeys
     codeFilter?: string
     tb?: string
     gosb?: string
+}
+
+export type RequestCubeLookUp = {
+    contract?: string
 }
 
 interface IStack<T> {

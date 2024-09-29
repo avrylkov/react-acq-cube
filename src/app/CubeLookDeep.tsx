@@ -1,16 +1,17 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Metric, RequestCube, RequestCubeCode, SortDirection, Stack} from "./types";
+import {Metric, RequestCubeDeep, RequestCubeDeepCode, SortDirection, Stack} from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {Button, Card, Input, Select} from "antd";
+import {ARROW_DOWN, ARROW_UP, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
 
 function CubeLookDeep() {
 
     const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [request, setRequest] = useState<RequestCube>({label: "Все ТБ", code: "ALL"});
+    const [request, setRequest] = useState<RequestCubeDeep>({label: "Все ТБ", code: "ALL"});
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
     //const [filter, setFilter] = useState<string>();
     //
-    const prevRequests = useRef(new Stack<RequestCube>());
+    const prevRequests = useRef(new Stack<RequestCubeDeep>());
     const selectedMetric = useRef<string>()
 
     function getMetric() {
@@ -33,7 +34,6 @@ function CubeLookDeep() {
     useEffect(() => {
         const fetchData = async () => {
             getMetric().then(data => {
-                //debugger
                 setMetrics(data)
                 //console.log(metrics)
             })
@@ -45,9 +45,9 @@ function CubeLookDeep() {
 
     function onLookDeep(metricCode: string) {
         prevRequests.current.push(request)
-        if (request.code === RequestCubeCode[RequestCubeCode.ALL]) {
+        if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL]) {
             setRequest({label: "По каждому ТБ", code: "ALL_TB"})
-        } else if (request.code === RequestCubeCode[RequestCubeCode.ALL_TB]) {
+        } else if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL_TB]) {
             setRequest({label: "ТБ", code: "TB", tb: metricCode})
         }
     }
@@ -115,25 +115,11 @@ function CubeLookDeep() {
         })
     }
 
-    let ARROW_UP = <>&#x2191;</>;
-    let ARROW_DOWN = <>&#x2193;</>;
-    let GO_BACK = <>&#x21e6;</>;
-    let GO_HOME = <>&#x1F3E0;</>;
-    let FIND = <>&#x1F50E;</>;
-
     function onFilter(value: string) {
         let rq = {...request, codeFilter: value}
         setRequest(rq)
     }
 
-
-    const headerStyle: React.CSSProperties = {
-        textAlign: 'center',
-        color: '#fff',
-        height: 34,
-        lineHeight: '34px',
-        backgroundColor: '#4096ff',
-    };
 
     return (
         <div>
