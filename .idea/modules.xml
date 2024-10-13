@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../reacr-acq-cube.iml" filepath="$PROJECT_DIR$/../reacr-acq-cube.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../react-acq-cube.iml" filepath="$PROJECT_DIR$/../react-acq-cube.iml" />
     </modules>
   </component>
 </project>

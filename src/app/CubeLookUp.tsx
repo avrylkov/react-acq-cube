@@ -75,7 +75,7 @@ function CubeLookUp() {
         const fetchData = async () => {
             getMetric().then(data => {
                 console.log(data)
-                debugger
+                //debugger
                 expandedKeys.current = getKeys(data)
                 setTbs(data)
                 //console.log(metrics)
@@ -110,7 +110,12 @@ function CubeLookUp() {
     };
 
     function onFilterContract(value: string) {
-        let rq = {...request, contract: value}
+        let rq = {...request, organization:'', contract: value}
+        setRequest(rq)
+    }
+
+    function onFilterOrganization(value: string) {
+        let rq = {...request, contract:'', organization: value}
         setRequest(rq)
     }
 
@@ -118,7 +123,10 @@ function CubeLookUp() {
     return (
         <div>
             <Header style={headerStyle}>
-                {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }} onChange={(e) => onFilterContract(e.target.value)}></Input>
+                {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
+                             value = {request.contract} onChange={(e) => onFilterContract(e.target.value)}></Input>
+                {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{ width: 200 }}
+                             value ={request.organization} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
             </Header>
             <Tree
                 showLine

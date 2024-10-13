@@ -12,7 +12,8 @@ export type MetricValue = {
 export enum RequestCubeDeepCode {
     ALL,
     ALL_TB,
-    TB
+    TB,
+    GOSB
 }
 
 export enum SortDirection {
@@ -37,6 +38,7 @@ export type RequestCubeDeep = {
 
 export type RequestCubeLookUp = {
     contract?: string
+    organization?: string
 }
 
 interface IStack<T> {

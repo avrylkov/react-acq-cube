@@ -48,7 +48,10 @@ function CubeLookDeep() {
         if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL]) {
             setRequest({label: "По каждому ТБ", code: "ALL_TB"})
         } else if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL_TB]) {
-            setRequest({label: "ТБ", code: "TB", tb: metricCode})
+            setRequest({label: "По ТБ", code: "TB", tb: metricCode})
+        } else if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.TB]) {
+            let rq: RequestCubeDeep = {...request, code: "GOSB", gosb: metricCode}
+            setRequest(rq)
         }
     }
 
@@ -139,8 +142,8 @@ function CubeLookDeep() {
 
             <Content style={{padding: '10px 20px 10px'}}>
                 {
-                    metrics.map((metric) => (
-                        <Card title={metric.code} size="small" style={{margin: '0px 0px 10px'}}>
+                    metrics.map((metric, index) => (
+                        <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>
                             <Card.Grid>
                                 <ul>
                                     {
