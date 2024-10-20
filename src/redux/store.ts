@@ -1,18 +1,12 @@
 import {configureStore, createSlice} from "@reduxjs/toolkit";
-
-export interface UserState {
-    login: string
-    time: Date
-}
+import {UserState} from "../app/types";
 
 // Начальное значение
-const initialState: UserState = {
-     login: "", time: new Date()
-};
+const initialUserState: UserState = {login: "", time: new Date()};
 
 const userSlice = createSlice({
     name: 'user',
-    initialState,
+    initialState: initialUserState,
     // Редьюсеры в слайсах меняют состояние и ничего не возвращают
     reducers: {
         setLogin: (state, action) => {
@@ -21,12 +15,18 @@ const userSlice = createSlice({
         setTime: (state, action) => {
             state.time = action.payload;
         },
+        setUser: (state, action) => {
+            let {login, time} = action.payload
+            state.login = login
+            state.time = time
+        }
     },
 });
 
-export const { setLogin, setTime } = userSlice.actions;
+export const { setLogin, setTime, setUser } = userSlice.actions;
 
 const userReducer = userSlice.reducer;
+
 export default configureStore({
 
     reducer: {

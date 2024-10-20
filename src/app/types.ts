@@ -10,11 +10,23 @@ export type MetricValue = {
 }
 
 export enum RequestCubeDeepCode {
-    ALL,
-    ALL_TB,
-    TB,
-    GOSB
+    ALL = 'ALL',
+    ALL_TB = 'ALL_TB',
+    TB = 'TB',
+    GOSB = 'GOSB',
+    ORG = 'ORG',
 }
+
+export type RequestCubeDeepCodeKey = keyof typeof RequestCubeDeepCode
+
+export const RequestCubeDeepName: Record<RequestCubeDeepCode, string> = {
+    [RequestCubeDeepCode.ALL]: 'Все',
+    [RequestCubeDeepCode.ALL_TB]: 'По каждому ТБ',
+    [RequestCubeDeepCode.TB]: 'По ТБ',
+    [RequestCubeDeepCode.GOSB]: 'По ГОСБ',
+    [RequestCubeDeepCode.ORG]: 'По Организации',
+}
+
 
 export enum SortDirection {
     ASC,
@@ -26,14 +38,13 @@ export enum Projection {
     LOOK_UP
 }
 
-type RequestCubeDeepCodeKeys = keyof typeof RequestCubeDeepCode;
-
 export type RequestCubeDeep = {
     label: string
-    code: RequestCubeDeepCodeKeys
+    code: RequestCubeDeepCode
     codeFilter?: string
     tb?: string
     gosb?: string
+    org?: string
 }
 
 export type RequestCubeLookUp = {
@@ -76,4 +87,15 @@ export class Stack<T> implements IStack<T> {
         return this.storage[0]
     }
 
+}
+
+export class UserState {
+
+    constructor(login: string, time: Date) {
+        this.login = login;
+        this.time = time;
+    }
+
+    login: string
+    time: Date
 }

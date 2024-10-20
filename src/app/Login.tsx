@@ -1,8 +1,9 @@
 import React, {useContext, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useDispatch} from "react-redux";
-import {setLogin, setTime} from "../redux/store";
+import {setUser} from "../redux/store";
 import {Button, Input} from "antd";
+import {UserState} from "./types";
 
 //debugger;
 
@@ -24,8 +25,10 @@ function Login() {
             }}></Input>
             <Button onClick={() => {
                 if (loginInput === "alex") {
-                    dispatch(setLogin(loginInput))
-                    dispatch(setTime(new Date()))
+                    //dispatch(setLogin(loginInput))
+                    //dispatch(setTime(new Date()))
+                    let userState = new UserState(loginInput, new Date())
+                    dispatch(setUser(userState))
                     navigate('cube', {replace: false})
                 } else {
                     setError("Не верный логин")

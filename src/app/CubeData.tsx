@@ -2,11 +2,10 @@ import React, {useState} from "react";
 import {Flex, Layout, Radio} from "antd";
 import CubeLookDeep from "./CubeLookDeep";
 import {Footer, Header} from "antd/es/layout/layout";
-import {Projection} from "./types";
+import {Projection, UserState} from "./types";
 import CubeLookUp from "./CubeLookUp";
 import {headerStyle} from "./Style";
 import {useSelector} from "react-redux";
-import {UserState} from "../redux/store";
 
 const layoutStyle = {
     borderRadius: 8,
@@ -24,7 +23,6 @@ const footerStyle: React.CSSProperties = {
 function CubeData() {
 
     const [projection, setProjection] = useState(Projection.DEEP)
-
     const userState: UserState = useSelector((state:any) => state.user);
 
     const projectionOptions = [

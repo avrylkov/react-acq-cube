@@ -1,13 +1,21 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Metric, RequestCubeDeep, RequestCubeDeepCode, SortDirection, Stack} from "./types";
+import {
+    Metric,
+    RequestCubeDeep,
+    RequestCubeDeepCode,
+    RequestCubeDeepCodeKey,
+    RequestCubeDeepName,
+    SortDirection,
+    Stack
+} from "./types";
 import {Content, Header} from "antd/es/layout/layout";
-import {Button, Card, Input, Select} from "antd";
-import {ARROW_DOWN, ARROW_UP, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
+import {Button, Card, Col, Flex, Input, Row, Select} from "antd";
+import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
 
 function CubeLookDeep() {
 
     const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [request, setRequest] = useState<RequestCubeDeep>({label: "Все ТБ", code: "ALL"});
+    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL});
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
     //const [filter, setFilter] = useState<string>();
     //
@@ -45,12 +53,17 @@ function CubeLookDeep() {
 
     function onLookDeep(metricCode: string) {
         prevRequests.current.push(request)
-        if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL]) {
-            setRequest({label: "По каждому ТБ", code: "ALL_TB"})
-        } else if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.ALL_TB]) {
-            setRequest({label: "По ТБ", code: "TB", tb: metricCode})
-        } else if (request.code === RequestCubeDeepCode[RequestCubeDeepCode.TB]) {
-            let rq: RequestCubeDeep = {...request, code: "GOSB", gosb: metricCode}
+        if (request.code === RequestCubeDeepCode.ALL) {
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL_TB, codeFilter: undefined }
+            setRequest(rq)
+        } else if (request.code === RequestCubeDeepCode.ALL_TB) {
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB], code: RequestCubeDeepCode.TB, tb: metricCode, codeFilter: undefined}
+            setRequest(rq)
+        } else if (request.code === RequestCubeDeepCode.TB) {
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB], code: RequestCubeDeepCode.GOSB, gosb: metricCode, codeFilter: undefined}
+            setRequest(rq)
+        } else if (request.code === RequestCubeDeepCode.GOSB) {
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode, codeFilter: undefined}
             setRequest(rq)
         }
     }
@@ -123,21 +136,50 @@ function CubeLookDeep() {
         setRequest(rq)
     }
 
+    function getRequestPath() {
+        let path: string[] = []
+        let rq= RequestCubeDeepCode[request.code]
+        for (let key in RequestCubeDeepCode) {
+            let requestCubeDeepCode = RequestCubeDeepCode[key as RequestCubeDeepCodeKey]
+            let cubeDeepName = RequestCubeDeepName[requestCubeDeepCode]
+            path.push(cubeDeepName)
+            if (rq === key) {
+                return path;
+            }
+        }
+        return path
+    }
 
     return (
         <div>
-            <Header style={headerStyle}>{request.label}
-                {FIND}<Input size={"small"} style={{width: '15%'}} onChange={(e) => onFilter(e.target.value)}></Input>
-                <Button onClick={onclick => onGoBack()} size={"small"} style={{left: '35%'}}>{GO_BACK} Назад</Button>
-                <Button onClick={onclick => onGoHome()} size={"small"} style={{left: '36%'}}>{GO_HOME}</Button>
-
-                <Button size={"small"}
-                        onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
-                <Select
-                    size={"small"}
-                    style={{width: 120}}
-                    onChange={onSortMetric}
-                    options={getMetricsNameForSelect()}/>
+            <Header style={headerStyle}>
+                <Row>
+                    {/*<Col span={4}>*/}
+                    {/*    {request.label}*/}+-
+                    {/*</Col>*/}
+                    <Col span={6}>
+                        {FIND}<Input size={"small"} style={{width: 150}}
+                                     value = {request.codeFilter}
+                                     onChange={(e) => onFilter(e.target.value)}></Input>
+                    </Col>
+                    <Col span={6}>
+                        <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
+                        <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
+                    </Col>
+                    <Col>
+                        <Button size={"small"} onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
+                        <Select
+                            size={"small"}
+                            style={{width: 120}}
+                            onChange={onSortMetric}
+                            options={getMetricsNameForSelect()}/>
+                    </Col>
+                </Row>
+                <Flex gap={"small"} vertical={false} style={{margin: '5px'}}>
+                    {
+                        getRequestPath().map((v) => (<div>{ARROW_RIGHT}{v}</div>))
+                    }
+                </Flex>
             </Header>
 
             <Content style={{padding: '10px 20px 10px'}}>
