@@ -52,17 +52,21 @@ function CubeLookDeep() {
     }, [request]);
 
     function onLookDeep(metricCode: string) {
-        prevRequests.current.push(request)
+        debugger
         if (request.code === RequestCubeDeepCode.ALL) {
+            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL_TB, codeFilter: undefined }
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.ALL_TB) {
+            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB], code: RequestCubeDeepCode.TB, tb: metricCode, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.TB) {
+            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB], code: RequestCubeDeepCode.GOSB, gosb: metricCode, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.GOSB) {
+            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode, codeFilter: undefined}
             setRequest(rq)
         }
@@ -155,7 +159,7 @@ function CubeLookDeep() {
             <Header style={headerStyle}>
                 <Row>
                     {/*<Col span={4}>*/}
-                    {/*    {request.label}*/}+-
+                    {/*    {request.label}*/}
                     {/*</Col>*/}
                     <Col span={6}>
                         {FIND}<Input size={"small"} style={{width: 150}}

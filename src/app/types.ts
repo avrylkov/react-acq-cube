@@ -23,7 +23,7 @@ export const RequestCubeDeepName: Record<RequestCubeDeepCode, string> = {
     [RequestCubeDeepCode.ALL]: 'Все',
     [RequestCubeDeepCode.ALL_TB]: 'По каждому ТБ',
     [RequestCubeDeepCode.TB]: 'По ТБ',
-    [RequestCubeDeepCode.GOSB]: 'По ГОСБ',
+    [RequestCubeDeepCode.GOSB]: 'По ГОСБам',
     [RequestCubeDeepCode.ORG]: 'По Организации',
 }
 
