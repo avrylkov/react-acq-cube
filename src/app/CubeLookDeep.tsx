@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import {
-    Metric,
+    Metric, PageDate, PageInfo,
     RequestCubeDeep,
     RequestCubeDeepCode,
     RequestCubeDeepCodeKey,
@@ -9,21 +9,27 @@ import {
     Stack
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
-import {Button, Card, Col, Flex, Input, Row, Select} from "antd";
+import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Tooltip} from "antd";
 import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
+
+const PAGE_SIZE = 20;
 
 function CubeLookDeep() {
 
     const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL});
+    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL],
+        code: RequestCubeDeepCode.ALL,
+        pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
     //const [filter, setFilter] = useState<string>();
     //
     const prevRequests = useRef(new Stack<RequestCubeDeep>());
     const selectedMetric = useRef<string>()
+    const total = useRef(0);
+    const currentPage = useRef(1);
 
     function getMetric() {
-        return fetch('http://localhost:8081/cube', {
+        return fetch('http://localhost:8081/deep', {
             method: "POST",
             //mode: "no-cors",
             headers: {
@@ -42,7 +48,9 @@ function CubeLookDeep() {
     useEffect(() => {
         const fetchData = async () => {
             getMetric().then(data => {
-                setMetrics(data)
+                let page: PageDate = data
+                total.current = page.total
+                setMetrics(page.dataCubes)
                 //console.log(metrics)
             })
 
@@ -52,30 +60,35 @@ function CubeLookDeep() {
     }, [request]);
 
     function onLookDeep(metricCode: string) {
-        debugger
+        let pageInfo : PageInfo = {pageSize: PAGE_SIZE, pageNumber: currentPage.current}
         if (request.code === RequestCubeDeepCode.ALL) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL_TB, codeFilter: undefined }
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL_TB,
+                pageInfo: pageInfo, codeFilter: undefined }
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.ALL_TB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB], code: RequestCubeDeepCode.TB, tb: metricCode, codeFilter: undefined}
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB], code: RequestCubeDeepCode.TB, tb: metricCode,
+                pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.TB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB], code: RequestCubeDeepCode.GOSB, gosb: metricCode, codeFilter: undefined}
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB], code: RequestCubeDeepCode.GOSB, gosb: metricCode,
+                pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.GOSB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode, codeFilter: undefined}
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode,
+                pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         }
     }
 
     function onGoBack() {
-        let pop = prevRequests.current.pop();
-        if (pop !== undefined) {
-            setRequest(pop)
+        let rq = prevRequests.current.pop();
+        if (rq !== undefined) {
+            setRequest(rq)
+            currentPage.current = rq.pageInfo.pageNumber
         }
     }
 
@@ -123,6 +136,7 @@ function CubeLookDeep() {
             if (firstRequest !== undefined) {
                 prevRequests.current = new Stack()
                 setRequest(firstRequest)
+                currentPage.current = firstRequest.pageInfo.pageNumber
             }
         }
     }
@@ -154,6 +168,12 @@ function CubeLookDeep() {
         return path
     }
 
+    const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
+        //console.log(page);
+        currentPage.current = page;
+        let rq: RequestCubeDeep = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
+        setRequest(rq)
+    };
     return (
         <div>
             <Header style={headerStyle}>
@@ -163,15 +183,20 @@ function CubeLookDeep() {
                     {/*</Col>*/}
                     <Col span={6}>
                         {FIND}<Input size={"small"} style={{width: 150}}
+                                     placeholder="Поиск"
                                      value = {request.codeFilter}
                                      onChange={(e) => onFilter(e.target.value)}></Input>
                     </Col>
                     <Col span={6}>
                         <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
-                        <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
+                        <Tooltip title="В начало">
+                            <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
+                        </Tooltip>
                     </Col>
                     <Col>
-                        <Button size={"small"} onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
+                        <Tooltip title="Сортировка">
+                            <Button size={"small"} onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
+                        </Tooltip>
                         <Select
                             size={"small"}
                             style={{width: 120}}
@@ -181,7 +206,7 @@ function CubeLookDeep() {
                 </Row>
                 <Flex gap={"small"} vertical={false} style={{margin: '5px'}}>
                     {
-                        getRequestPath().map((v) => (<div>{ARROW_RIGHT}{v}</div>))
+                        getRequestPath().map((v) => (<div>{ARROW_RIGHT} {v}</div>))
                     }
                 </Flex>
             </Header>
@@ -203,6 +228,14 @@ function CubeLookDeep() {
                         </Card>
                     ))
                 }
+                <Pagination
+                    total={total.current}
+                    showTotal={(total) => `Всего ${total}`}
+                    defaultPageSize={PAGE_SIZE}
+                    defaultCurrent={1}
+                    pageSize={PAGE_SIZE}
+                    current={currentPage.current} onChange={onChangeCurrentPage}
+                />
             </Content>
         </div>
     )

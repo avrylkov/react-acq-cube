@@ -1,3 +1,7 @@
+export type PageDate = {
+    total: number
+    dataCubes: Metric[]
+}
 
 export type Metric = {
     code: string
@@ -38,7 +42,13 @@ export enum Projection {
     LOOK_UP
 }
 
+export type PageInfo = {
+    pageNumber: number
+    pageSize: number
+}
+
 export type RequestCubeDeep = {
+    pageInfo: PageInfo
     label: string
     code: RequestCubeDeepCode
     codeFilter?: string

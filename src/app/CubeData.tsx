@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Flex, Layout, Radio} from "antd";
+import {Flex, Layout, Radio, Tooltip} from "antd";
 import CubeLookDeep from "./CubeLookDeep";
 import {Footer, Header} from "antd/es/layout/layout";
 import {Projection, UserState} from "./types";
@@ -33,13 +33,16 @@ function CubeData() {
     return (
         <Layout style={layoutStyle}>
             <Header style={headerStyle}>
-                <Flex vertical gap="middle" >
-                    <Radio.Group options={projectionOptions}
-                    defaultValue={projection}
-                    //optionType="button"
-                    //buttonStyle="solid"
-                    onChange={(e) => {setProjection(e.target.value)}}
-                />
+                <Flex vertical={false} gap="small" style={{margin:'10px'}} >
+                    <text>Acquiring Cube </text>
+                    <Tooltip title={'Напраление проекции'}>
+                        <Radio.Group options={projectionOptions}
+                        defaultValue={projection}
+                        //optionType="button"
+                        //buttonStyle="solid"
+                        onChange={(e) => {setProjection(e.target.value)}}
+                        />
+                    </Tooltip>
                 </Flex>
             </Header>
             {projection === Projection.DEEP && <CubeLookDeep></CubeLookDeep>}
