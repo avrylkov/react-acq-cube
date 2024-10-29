@@ -4,21 +4,8 @@ import CubeLookDeep from "./CubeLookDeep";
 import {Footer, Header} from "antd/es/layout/layout";
 import {Projection, UserState} from "./types";
 import CubeLookUp from "./CubeLookUp";
-import {headerStyle} from "./Style";
+import {COPYRIGHT, footerStyle, headerStyle, layoutStyle} from "./Style";
 import {useSelector} from "react-redux";
-
-const layoutStyle = {
-    borderRadius: 8,
-    overflow: 'hidden',
-    width: '50%',
-    maxWidth: '50%',
-};
-
-const footerStyle: React.CSSProperties = {
-    textAlign: 'center',
-    color: '#fff',
-    backgroundColor: '#4096ff',
-};
 
 function CubeData() {
 
@@ -33,8 +20,8 @@ function CubeData() {
     return (
         <Layout style={layoutStyle}>
             <Header style={headerStyle}>
-                <Flex vertical={false} gap="small" style={{margin:'10px'}} >
-                    <text>Acquiring Cube </text>
+                <Flex vertical={false} gap="small" style={{margin:'5px'}} >
+                    <h3>Acquiring Cube{COPYRIGHT}</h3>
                     <Tooltip title={'Напраление проекции'}>
                         <Radio.Group options={projectionOptions}
                         defaultValue={projection}

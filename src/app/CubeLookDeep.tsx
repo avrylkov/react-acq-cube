@@ -10,7 +10,7 @@ import {
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Tooltip} from "antd";
-import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
+import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
 
 const PAGE_SIZE = 20;
 
@@ -79,6 +79,16 @@ function CubeLookDeep() {
         } else if (request.code === RequestCubeDeepCode.GOSB) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode,
+                pageInfo: pageInfo, codeFilter: undefined}
+            setRequest(rq)}
+        else if (request.code === RequestCubeDeepCode.ORG) {
+            prevRequests.current.push(request)
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT], code: RequestCubeDeepCode.CONTRACT, contract: metricCode,
+                pageInfo: pageInfo, codeFilter: undefined}
+            setRequest(rq)
+        } else if (request.code === RequestCubeDeepCode.CONTRACT) {
+            prevRequests.current.push(request)
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP], code: RequestCubeDeepCode.SHOP, shop: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         }
@@ -215,16 +225,17 @@ function CubeLookDeep() {
                 {
                     metrics.map((metric, index) => (
                         <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>
-                            <Card.Grid>
+                            {request.code !== RequestCubeDeepCode.SHOP && <Card.Grid>
                                 <ul>
                                     {
                                         metric.metrics.map((metricValue) =>
                                             <li>{metricValue.name} : {metricValue.value}</li>)
                                     }
                                 </ul>
-                            </Card.Grid>
-                            <Card.Grid><Button type="primary" onClick={onclick => onLookDeep(metric.code)}>Открыть
-                                +</Button></Card.Grid>
+                            </Card.Grid>}
+                            {request.code !== RequestCubeDeepCode.SHOP && <Card.Grid><Button type="primary" onClick={onclick => onLookDeep(metric.code)}>
+                                Открыть{BOOK}</Button>
+                            </Card.Grid>}
                         </Card>
                     ))
                 }

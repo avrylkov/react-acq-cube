@@ -19,6 +19,8 @@ export enum RequestCubeDeepCode {
     TB = 'TB',
     GOSB = 'GOSB',
     ORG = 'ORG',
+    CONTRACT = 'CONTRACT',
+    SHOP = 'SHOP',
 }
 
 export type RequestCubeDeepCodeKey = keyof typeof RequestCubeDeepCode
@@ -29,6 +31,8 @@ export const RequestCubeDeepName: Record<RequestCubeDeepCode, string> = {
     [RequestCubeDeepCode.TB]: 'По ТБ',
     [RequestCubeDeepCode.GOSB]: 'По ГОСБам',
     [RequestCubeDeepCode.ORG]: 'По Организации',
+    [RequestCubeDeepCode.CONTRACT]: 'По Договору',
+    [RequestCubeDeepCode.SHOP]: 'По ТСТ',
 }
 
 
@@ -55,6 +59,8 @@ export type RequestCubeDeep = {
     tb?: string
     gosb?: string
     org?: string
+    contract?: string
+    shop?: string
 }
 
 export type RequestCubeLookUp = {
