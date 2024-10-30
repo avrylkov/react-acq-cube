@@ -17,7 +17,7 @@ const PAGE_SIZE = 20;
 function CubeLookDeep() {
 
     const [metrics, setMetrics] = useState<Metric[]>([]);
-    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL],
+    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
         code: RequestCubeDeepCode.ALL,
         pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
@@ -63,32 +63,32 @@ function CubeLookDeep() {
         let pageInfo : PageInfo = {pageSize: PAGE_SIZE, pageNumber: currentPage.current}
         if (request.code === RequestCubeDeepCode.ALL) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL], code: RequestCubeDeepCode.ALL_TB,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent, code: RequestCubeDeepCode.ALL_TB,
                 pageInfo: pageInfo, codeFilter: undefined }
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.ALL_TB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB], code: RequestCubeDeepCode.TB, tb: metricCode,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB].parent, code: RequestCubeDeepCode.TB, tb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.TB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB], code: RequestCubeDeepCode.GOSB, gosb: metricCode,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB].parent, code: RequestCubeDeepCode.GOSB, gosb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.GOSB) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG], code: RequestCubeDeepCode.ORG, org: metricCode,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG].parent, code: RequestCubeDeepCode.ORG, org: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)}
         else if (request.code === RequestCubeDeepCode.ORG) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT], code: RequestCubeDeepCode.CONTRACT, contract: metricCode,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT].parent, code: RequestCubeDeepCode.CONTRACT, contract: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         } else if (request.code === RequestCubeDeepCode.CONTRACT) {
             prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP], code: RequestCubeDeepCode.SHOP, shop: metricCode,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP].parent, code: RequestCubeDeepCode.SHOP, shop: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             setRequest(rq)
         }
@@ -169,7 +169,7 @@ function CubeLookDeep() {
         let rq= RequestCubeDeepCode[request.code]
         for (let key in RequestCubeDeepCode) {
             let requestCubeDeepCode = RequestCubeDeepCode[key as RequestCubeDeepCodeKey]
-            let cubeDeepName = RequestCubeDeepName[requestCubeDeepCode]
+            let cubeDeepName = RequestCubeDeepName[requestCubeDeepCode].parent
             path.push(cubeDeepName)
             if (rq === key) {
                 return path;
@@ -222,6 +222,7 @@ function CubeLookDeep() {
             </Header>
 
             <Content style={{padding: '10px 20px 10px'}}>
+                <span>{RequestCubeDeepName[request.code].child}</span>
                 {
                     metrics.map((metric, index) => (
                         <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>

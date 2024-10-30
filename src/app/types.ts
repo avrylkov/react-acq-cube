@@ -25,14 +25,19 @@ export enum RequestCubeDeepCode {
 
 export type RequestCubeDeepCodeKey = keyof typeof RequestCubeDeepCode
 
-export const RequestCubeDeepName: Record<RequestCubeDeepCode, string> = {
-    [RequestCubeDeepCode.ALL]: 'Все',
-    [RequestCubeDeepCode.ALL_TB]: 'По каждому ТБ',
-    [RequestCubeDeepCode.TB]: 'По ТБ',
-    [RequestCubeDeepCode.GOSB]: 'По ГОСБам',
-    [RequestCubeDeepCode.ORG]: 'По Организации',
-    [RequestCubeDeepCode.CONTRACT]: 'По Договору',
-    [RequestCubeDeepCode.SHOP]: 'По ТСТ',
+export interface DeepNameLabelInfo {
+    parent: string
+    child?: string
+}
+
+export const RequestCubeDeepName: Record<RequestCubeDeepCode, DeepNameLabelInfo> = {
+    [RequestCubeDeepCode.ALL]: {parent: 'Все'},
+    [RequestCubeDeepCode.ALL_TB]: {parent:'По каждому ТБ', child: 'Код ТБ'},
+    [RequestCubeDeepCode.TB]: {parent: 'По ТБ', child: 'Код ГОСБ'},
+    [RequestCubeDeepCode.GOSB]: {parent:'По ГОСБам', child:'ИНН/КПП'},
+    [RequestCubeDeepCode.ORG]: {parent:'По Организации', child:'N Договора'},
+    [RequestCubeDeepCode.CONTRACT]: {parent:'По Договору', child:'Мид ТСТ'},
+    [RequestCubeDeepCode.SHOP]: {parent:'По ТСТ', child:'Тид Терминала'},
 }
 
 

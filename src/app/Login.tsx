@@ -33,7 +33,7 @@ function Login() {
                             dispatch(setUser(userState))
                             navigate('cube', {replace: false})
                         } else {
-                            setError("Не верный логин")
+                            setError("Не верный логин ")
                         }
                     }}> Login
                     </Button>
