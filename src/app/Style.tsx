@@ -8,6 +8,7 @@ export const FIND = <>&#x1F50E;</>;
 export const ARROW_RIGHT = <>&#x21d2;</>;
 export const COPYRIGHT = <>&#169;</>;
 export const BOOK   = <>&#x1F56E;</>;
+export const DOOR   = <>&#x1F6AA;</>;
 
 export const headerStyle: React.CSSProperties = {
     textAlign: 'center',
@@ -20,8 +21,8 @@ export const headerStyle: React.CSSProperties = {
 export const layoutStyle = {
     borderRadius: 8,
     overflow: 'hidden',
-    width: '50%',
-    maxWidth: '50%',
+    width: '100%',
+    maxWidth: '100%',
 };
 
 export const footerStyle: React.CSSProperties = {

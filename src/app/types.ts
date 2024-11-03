@@ -35,7 +35,7 @@ export const RequestCubeDeepName: Record<RequestCubeDeepCode, DeepNameLabelInfo>
     [RequestCubeDeepCode.ALL_TB]: {parent:'По каждому ТБ', child: 'Код ТБ'},
     [RequestCubeDeepCode.TB]: {parent: 'По ТБ', child: 'Код ГОСБ'},
     [RequestCubeDeepCode.GOSB]: {parent:'По ГОСБам', child:'ИНН/КПП'},
-    [RequestCubeDeepCode.ORG]: {parent:'По Организации', child:'N Договора'},
+    [RequestCubeDeepCode.ORG]: {parent:'По Организации', child:'№ Договора'},
     [RequestCubeDeepCode.CONTRACT]: {parent:'По Договору', child:'Мид ТСТ'},
     [RequestCubeDeepCode.SHOP]: {parent:'По ТСТ', child:'Тид Терминала'},
 }
@@ -79,6 +79,8 @@ interface IStack<T> {
     peek(): T | undefined;
     size(): number;
 }
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];

@@ -4,18 +4,26 @@ import {
     RequestCubeDeep,
     RequestCubeDeepCode,
     RequestCubeDeepCodeKey,
-    RequestCubeDeepName,
+    RequestCubeDeepName, sleep,
     SortDirection,
     Stack
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
-import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Tooltip} from "antd";
+import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Spin, Tooltip} from "antd";
 import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
 
 const PAGE_SIZE = 20;
 
+const URL = 'http://localhost:8081/deep'
+const MEDIA_TYPE = 'application/json'
+
+// const URL = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
+// const MEDIA_TYPE = 'text/plain'
+
+
 function CubeLookDeep() {
 
+    const loading = useRef<boolean>(true);
     const [metrics, setMetrics] = useState<Metric[]>([]);
     const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
         code: RequestCubeDeepCode.ALL,
@@ -28,12 +36,14 @@ function CubeLookDeep() {
     const total = useRef(0);
     const currentPage = useRef(1);
 
+
+
     function getMetric() {
-        return fetch('http://localhost:8081/deep', {
+        return fetch(URL, {
             method: "POST",
             //mode: "no-cors",
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': MEDIA_TYPE
             },
             body: JSON.stringify(request)
         })
@@ -47,10 +57,12 @@ function CubeLookDeep() {
 
     useEffect(() => {
         const fetchData = async () => {
+            await sleep(500);
             getMetric().then(data => {
                 let page: PageDate = data
                 total.current = page.total
                 setMetrics(page.dataCubes)
+                loading.current = false
                 //console.log(metrics)
             })
 
@@ -59,45 +71,50 @@ function CubeLookDeep() {
         fetchData();
     }, [request]);
 
+    function doRequest(rq: RequestCubeDeep) {
+        loading.current = true
+        setRequest(rq)
+    }
+
     function onLookDeep(metricCode: string) {
         let pageInfo : PageInfo = {pageSize: PAGE_SIZE, pageNumber: currentPage.current}
         if (request.code === RequestCubeDeepCode.ALL) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent, code: RequestCubeDeepCode.ALL_TB,
                 pageInfo: pageInfo, codeFilter: undefined }
-            setRequest(rq)
+            doRequest(rq)
         } else if (request.code === RequestCubeDeepCode.ALL_TB) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB].parent, code: RequestCubeDeepCode.TB, tb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            setRequest(rq)
+            doRequest(rq)
         } else if (request.code === RequestCubeDeepCode.TB) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB].parent, code: RequestCubeDeepCode.GOSB, gosb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            setRequest(rq)
+            doRequest(rq)
         } else if (request.code === RequestCubeDeepCode.GOSB) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG].parent, code: RequestCubeDeepCode.ORG, org: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            setRequest(rq)}
+            doRequest(rq)}
         else if (request.code === RequestCubeDeepCode.ORG) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT].parent, code: RequestCubeDeepCode.CONTRACT, contract: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            setRequest(rq)
+            doRequest(rq)
         } else if (request.code === RequestCubeDeepCode.CONTRACT) {
             prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP].parent, code: RequestCubeDeepCode.SHOP, shop: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            setRequest(rq)
+            doRequest(rq)
         }
     }
 
     function onGoBack() {
         let rq = prevRequests.current.pop();
         if (rq !== undefined) {
-            setRequest(rq)
+            doRequest(rq)
             currentPage.current = rq.pageInfo.pageNumber
         }
     }
@@ -145,7 +162,7 @@ function CubeLookDeep() {
             let firstRequest = current.first();
             if (firstRequest !== undefined) {
                 prevRequests.current = new Stack()
-                setRequest(firstRequest)
+                doRequest(firstRequest)
                 currentPage.current = firstRequest.pageInfo.pageNumber
             }
         }
@@ -161,7 +178,7 @@ function CubeLookDeep() {
 
     function onFilter(value: string) {
         let rq = {...request, codeFilter: value}
-        setRequest(rq)
+        doRequest(rq)
     }
 
     function getRequestPath() {
@@ -182,7 +199,7 @@ function CubeLookDeep() {
         //console.log(page);
         currentPage.current = page;
         let rq: RequestCubeDeep = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
-        setRequest(rq)
+        doRequest(rq)
     };
     return (
         <div>
@@ -223,6 +240,8 @@ function CubeLookDeep() {
 
             <Content style={{padding: '10px 20px 10px'}}>
                 <span>{RequestCubeDeepName[request.code].child}</span>
+                <Spin size="large" style={{marginLeft : '35%'}} spinning={loading.current}>
+                </Spin>
                 {
                     metrics.map((metric, index) => (
                         <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>
