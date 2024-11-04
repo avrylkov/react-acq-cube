@@ -13,9 +13,10 @@ export const DOOR   = <>&#x1F6AA;</>;
 export const headerStyle: React.CSSProperties = {
     textAlign: 'center',
     color: '#fff',
-    height: 50,
+    height: '80px',
     lineHeight: '10px',
     backgroundColor: '#4096ff',
+
 };
 
 export const layoutStyle = {

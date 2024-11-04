@@ -21,9 +21,10 @@ function CubeData() {
 
     return (
         <Layout style={layoutStyle}>
-            {userState.login.length > 0 && <div>
+            {userState.login.length > 0 &&
+             <div>
                 <Header style={headerStyle}>
-                    <Flex vertical={false} gap="small" style={{margin: '5px'}}>
+                    <Flex vertical={false} gap="small" style={{marginTop: '5px'}}>
                         <h3>Acquiring Cube{COPYRIGHT}</h3>
                         <Tooltip title={'Напраление проекции'}>
                             <Radio.Group options={projectionOptions}
@@ -35,7 +36,7 @@ function CubeData() {
                                          }}
                             />
                         </Tooltip>
-                        <Button onClick={(e) => {
+                        <Button style={{marginTop: '5px'}} onClick={(e) => {
                             navigate('/login')
                         }}>{DOOR}</Button>
                     </Flex>

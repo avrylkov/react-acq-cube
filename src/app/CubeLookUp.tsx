@@ -24,6 +24,11 @@ function CubeLookUp() {
 
     type Contract = {
         key: string
+        shops: Shop[]
+    }
+
+    type Shop = {
+        key: string
     }
 
     const [request, setRequest] = useState<RequestCubeLookUp>({});
@@ -58,7 +63,13 @@ function CubeLookUp() {
                                             children: org.contracts.map((contr:any) => {
                                                 return {
                                                     key: contr.code,
-                                                    title: contr.code
+                                                    title: contr.code,
+                                                    children: contr.shops.map((shop: any) => {
+                                                        return {
+                                                            key: shop.code,
+                                                            title: shop.code
+                                                        }
+                                                    })
                                                 }
                                             })
                                         }
@@ -95,7 +106,11 @@ function CubeLookUp() {
                 gosb.children?.map((org: any) => {
                     filled = org.children? org.children.length > 0 : false
                     org.children?.map((contr: any) => {
-                        keys.push(contr.key)
+                        filled = contr.children? contr.children.length > 0 : false
+                        contr.children?.map((shop: any) => {
+                            keys.push(shop.key)
+                        })
+                        if (!filled) keys.push(contr.key)
                     })
                     if (!filled) keys.push(org.key)
                 })
@@ -110,12 +125,17 @@ function CubeLookUp() {
     };
 
     function onFilterContract(value: string) {
-        let rq = {...request, organization:'', contract: value}
+        let rq = {...request, organization:'', shop:'', contract: value}
         setRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
-        let rq = {...request, contract:'', organization: value}
+        let rq = {...request, contract:'', shop:'', organization: value}
+        setRequest(rq)
+    }
+
+    function onFilterShop(value: string) {
+        let rq = {...request, contract:'', organization: '', shop: value}
         setRequest(rq)
     }
 
@@ -123,10 +143,12 @@ function CubeLookUp() {
     return (
         <div>
             <Header style={headerStyle}>
-                {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
-                             value = {request.contract} onChange={(e) => onFilterContract(e.target.value)}></Input>
                 {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{ width: 200 }}
                              value ={request.organization} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
+                {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
+                             value = {request.contract} onChange={(e) => onFilterContract(e.target.value)}></Input>
+                {FIND}<Input addonBefore="МИД ТСТ" size={"small"} style={{ width: 200 }}
+                             value ={request.shop} onChange={(e) => onFilterShop(e.target.value)}></Input>
             </Header>
             <Tree
                 showLine

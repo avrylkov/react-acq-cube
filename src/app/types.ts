@@ -71,6 +71,7 @@ export type RequestCubeDeep = {
 export type RequestCubeLookUp = {
     contract?: string
     organization?: string
+    shop?: string
 }
 
 interface IStack<T> {

@@ -201,34 +201,42 @@ function CubeLookDeep() {
         let rq: RequestCubeDeep = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
         doRequest(rq)
     };
+
+    const gridStyleCell1: React.CSSProperties = {
+        width: '60%',
+        textAlign: 'left',
+    };
+    const gridStyleCell2: React.CSSProperties = {
+        width: '40%'
+    };
+
     return (
         <div>
             <Header style={headerStyle}>
                 <Row>
-                    {/*<Col span={4}>*/}
-                    {/*    {request.label}*/}
-                    {/*</Col>*/}
-                    <Col span={6}>
-                        {FIND}<Input size={"small"} style={{width: 150}}
+                    <Col span={12}>
+                        {FIND}<Input size={"small"} style={{width: '50%'}}
                                      placeholder="Поиск"
                                      value = {request.codeFilter}
                                      onChange={(e) => onFilter(e.target.value)}></Input>
                     </Col>
-                    <Col span={6}>
+                    <Col span={12}>
                         <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
                         <Tooltip title="В начало">
                             <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
                         </Tooltip>
                     </Col>
-                    <Col>
+                </Row>
+                <Row style={{marginTop: '10px'}}>
+                    <Col span={12}>
                         <Tooltip title="Сортировка">
                             <Button size={"small"} onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
+                            <Select
+                                size={"small"}
+                                style={{width: 120}}
+                                onChange={onSortMetric}
+                                options={getMetricsNameForSelect()}/>
                         </Tooltip>
-                        <Select
-                            size={"small"}
-                            style={{width: 120}}
-                            onChange={onSortMetric}
-                            options={getMetricsNameForSelect()}/>
                     </Col>
                 </Row>
                 <Flex gap={"small"} vertical={false} style={{margin: '5px'}}>
@@ -245,17 +253,20 @@ function CubeLookDeep() {
                 {
                     metrics.map((metric, index) => (
                         <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>
-                            {request.code !== RequestCubeDeepCode.SHOP && <Card.Grid>
-                                <ul>
-                                    {
-                                        metric.metrics.map((metricValue) =>
-                                            <li>{metricValue.name} : {metricValue.value}</li>)
-                                    }
-                                </ul>
-                            </Card.Grid>}
-                            {request.code !== RequestCubeDeepCode.SHOP && <Card.Grid><Button type="primary" onClick={onclick => onLookDeep(metric.code)}>
-                                Открыть{BOOK}</Button>
-                            </Card.Grid>}
+                            {request.code !== RequestCubeDeepCode.SHOP &&
+                                <Flex vertical={false}>
+                                    <Card.Grid style={gridStyleCell1}>
+                                        <ul>
+                                            {
+                                                metric.metrics.map((metricValue) =>
+                                                    <li>{metricValue.name} : {metricValue.value}</li>)
+                                            }
+                                        </ul>
+                                    </Card.Grid>
+                                     <Card.Grid style={gridStyleCell2}><Button type="primary" onClick={onclick => onLookDeep(metric.code)}>
+                                        Открыть{BOOK}</Button>
+                                    </Card.Grid>
+                                </Flex>}
                         </Card>
                     ))
                 }
