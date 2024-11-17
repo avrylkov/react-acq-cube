@@ -5,34 +5,40 @@ import {RequestCubeLookUp} from "./types";
 import {Header} from "antd/es/layout/layout";
 import {FIND, headerStyle} from "./Style";
 
+interface TbTreeData {
+    code: string
+    gosbs: GosbTreeData[]
+}
+
+interface GosbTreeData {
+    code: string
+    organizations: OrgTreeData[]
+}
+
+interface OrgTreeData {
+    code: string
+    contracts: ContrTreeData[]
+}
+
+interface ContrTreeData {
+    code: string
+    shops: ShopTreeData[]
+}
+
+interface ShopTreeData {
+    code: string
+}
+
+interface TreeData {
+    key: string
+    title: string
+    children: TreeData[]
+}
+
 function CubeLookUp() {
 
-    type Tb = {
-        key: string
-        gosbs: Gosb[]
-    }
-
-    type Gosb = {
-        key: string
-        organizations: Organization[]
-    }
-
-    type Organization = {
-        key: string
-        contracts: Contract[]
-    }
-
-    type Contract = {
-        key: string
-        shops: Shop[]
-    }
-
-    type Shop = {
-        key: string
-    }
-
-    const [request, setRequest] = useState<RequestCubeLookUp>({});
-    const [tbs, setTbs] = useState<Tb[]>([]);
+    const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:''});
+    const [tbs, setTbs] = useState<TreeData[]>([]);
     const expandedKeys = useRef<string[]>([])
 
     function getMetric() {
@@ -48,44 +54,51 @@ function CubeLookUp() {
                 return res.json();
             })
             .then((data) => {
-                return data.map((tb: any) => {
-                        return {
-                            key: tb.code,
-                            title: tb.code,
-                            children: tb.gosbs.map((gosb:any) => {
-                                return {
-                                    key: gosb.code,
-                                    title: gosb.code,
-                                    children: gosb.organizations.map((org:any) => {
-                                        return {
-                                            key: org.code,
-                                            title: org.code,
-                                            children: org.contracts.map((contr:any) => {
-                                                return {
-                                                    key: contr.code,
-                                                    title: contr.code,
-                                                    children: contr.shops.map((shop: any) => {
-                                                        return {
-                                                            key: shop.code,
-                                                            title: shop.code
-                                                        }
-                                                    })
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    }
-                )
-            }).catch(error => console.warn(error))
+                return mapTreeTb(data)
+            }).catch(error => {
+                console.warn(error)
+                return []
+            })
+    }
+
+    function mapTreeTb(tbData: TbTreeData[]): TreeData[] {
+        return tbData.map((tb) => {
+                return {key: tb.code, title: tb.code, children: mapTreeGosb(tb.gosbs)}
+            }
+        )
+    }
+
+    function mapTreeGosb(gosbs: GosbTreeData[]): TreeData[] {
+        return gosbs.map((gosb) => {
+                return {key: gosb.code, title: gosb.code, children: mapTreeOrg(gosb.organizations)}
+            }
+        )
+    }
+
+    function mapTreeOrg(organizations: OrgTreeData[]): TreeData[] {
+        return organizations.map((org) => {
+                return {key: org.code, title: org.code, children: mapTreeContract(org.contracts)}
+            }
+        )
+    }
+
+    function mapTreeContract(contracts: ContrTreeData[]): TreeData[] {
+        return contracts.map((contract) => {
+                return {key: contract.code, title: contract.code, children: mapTreeShop(contract.shops)}
+            }
+        )
+    }
+
+    function mapTreeShop(shops: ShopTreeData[]): TreeData[] {
+        return shops.map((shop) => {
+                return {key: shop.code, title: shop.code, children: []}
+            }
+        )
     }
 
     useEffect(() => {
         const fetchData = async () => {
             getMetric().then(data => {
-                console.log(data)
                 //debugger
                 expandedKeys.current = getKeys(data)
                 setTbs(data)
@@ -94,30 +107,20 @@ function CubeLookUp() {
 
         };
         //
-        fetchData();
+        if (request.organization?.length > 2 || request.contract?.length > 2 || request.shop?.length > 2) {
+            fetchData();
+        }
     }, [request]);
 
-    function getKeys(data: any) {
-        let keys: string[] = []
-        let filled : boolean = false
-        data.map((tb: any) => {
-            tb.children?.map((gosb: any) => {
-                filled = gosb.children? gosb.children.length > 0 : false
-                gosb.children?.map((org: any) => {
-                    filled = org.children? org.children.length > 0 : false
-                    org.children?.map((contr: any) => {
-                        filled = contr.children? contr.children.length > 0 : false
-                        contr.children?.map((shop: any) => {
-                            keys.push(shop.key)
-                        })
-                        if (!filled) keys.push(contr.key)
-                    })
-                    if (!filled) keys.push(org.key)
-                })
-                if (!filled) keys.push(gosb.key)
-            })
-        })
-        return keys
+    function getKeys(treeData: TreeData[]): string[] {
+        let find = treeData
+            .filter(t => t.children.length > 0)
+            .flatMap(t => t.children);
+        if (find.length > 0) {
+            return getKeys(find)
+        } else {
+            return treeData.map(t => t.key)
+        }
     }
 
     const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
@@ -125,18 +128,18 @@ function CubeLookUp() {
     };
 
     function onFilterContract(value: string) {
-        let rq = {...request, organization:'', shop:'', contract: value}
+        let rq = {...request, organization: '', shop: '', contract: value}
         setRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
-        let rq = {...request, contract:'', shop:'', organization: value}
+        let rq = {...request, contract: '', shop: '', organization: value}
         setRequest(rq)
     }
 
     function onFilterShop(value: string) {
         let rq = {...request, contract:'', organization: '', shop: value}
-        setRequest(rq)
+            setRequest(rq)
     }
 
 

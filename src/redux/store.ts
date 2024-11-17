@@ -1,5 +1,7 @@
 import {configureStore, createSlice} from "@reduxjs/toolkit";
 import {UserState} from "../app/types";
+import { routerReducer } from 'react-router-redux';
+
 
 // Начальное значение
 const initialUserState: UserState = {login: "", time: new Date()};
@@ -23,6 +25,7 @@ const userSlice = createSlice({
     },
 });
 
+
 export const { setLogin, setTime, setUser } = userSlice.actions;
 
 const userReducer = userSlice.reducer;
@@ -31,6 +34,7 @@ export default configureStore({
 
     reducer: {
         user: userReducer,
+        routing: routerReducer,
     },
 });
 
