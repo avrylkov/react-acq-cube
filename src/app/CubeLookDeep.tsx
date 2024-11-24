@@ -1,12 +1,16 @@
 import React, {useEffect, useRef, useState} from "react";
 import {
-    Metric, PageDate, PageInfo,
+    MEDIA_TYPE,
+    Metric,
+    PageDate,
+    PageInfo,
     RequestCubeDeep,
     RequestCubeDeepCode,
-    RequestCubeDeepCodeKey,
-    RequestCubeDeepName, sleep,
+    RequestCubeDeepName,
+    sleep,
     SortDirection,
-    Stack
+    Stack,
+    URL
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Spin, Tooltip} from "antd";
@@ -14,24 +18,17 @@ import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerS
 
 const PAGE_SIZE = 20;
 
-const URL = 'http://localhost:8081/deep'
-const MEDIA_TYPE = 'application/json'
-
-// const URL = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
-// const MEDIA_TYPE = 'text/plain'
-
 
 function CubeLookDeep() {
 
     const loading = useRef<boolean>(true);
     const [metrics, setMetrics] = useState<Metric[]>([]);
+
     const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
-        code: RequestCubeDeepCode.ALL,
-        pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+        code: RequestCubeDeepCode.ALL,  pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    const prevRequests = useRef(new Stack<RequestCubeDeep>(request));
+
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
-    //const [filter, setFilter] = useState<string>();
-    //
-    const prevRequests = useRef(new Stack<RequestCubeDeep>());
     const selectedMetric = useRef<string>()
     const total = useRef(0);
     const currentPage = useRef(1);
@@ -71,50 +68,50 @@ function CubeLookDeep() {
         fetchData();
     }, [request]);
 
-    function doRequest(rq: RequestCubeDeep) {
+    function doNewRequest(newRq: RequestCubeDeep, isHistory: boolean = true) {
         loading.current = true
-        setRequest(rq)
+        // debugger
+        if (isHistory) {
+            prevRequests.current.push(newRq)
+        }
+        setRequest(newRq)
     }
 
     function onLookDeep(metricCode: string) {
         let pageInfo : PageInfo = {pageSize: PAGE_SIZE, pageNumber: currentPage.current}
         if (request.code === RequestCubeDeepCode.ALL) {
-            prevRequests.current.push(request)
-            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent, code: RequestCubeDeepCode.ALL_TB,
+            let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL_TB].parent, code: RequestCubeDeepCode.ALL_TB,
                 pageInfo: pageInfo, codeFilter: undefined }
-            doRequest(rq)
+            doNewRequest(rq)
         } else if (request.code === RequestCubeDeepCode.ALL_TB) {
-            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.TB].parent, code: RequestCubeDeepCode.TB, tb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            doRequest(rq)
+            doNewRequest(rq)
         } else if (request.code === RequestCubeDeepCode.TB) {
-            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.GOSB].parent, code: RequestCubeDeepCode.GOSB, gosb: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            doRequest(rq)
+            doNewRequest(rq)
         } else if (request.code === RequestCubeDeepCode.GOSB) {
-            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ORG].parent, code: RequestCubeDeepCode.ORG, org: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            doRequest(rq)}
+            doNewRequest(rq)}
         else if (request.code === RequestCubeDeepCode.ORG) {
-            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT].parent, code: RequestCubeDeepCode.CONTRACT, contract: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            doRequest(rq)
+            doNewRequest(rq)
         } else if (request.code === RequestCubeDeepCode.CONTRACT) {
-            prevRequests.current.push(request)
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP].parent, code: RequestCubeDeepCode.SHOP, shop: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
-            doRequest(rq)
+            doNewRequest(rq)
         }
     }
 
     function onGoBack() {
-        let rq = prevRequests.current.pop();
+        debugger
+        prevRequests.current.pop()
+        let rq = prevRequests.current.last()
         if (rq !== undefined) {
-            doRequest(rq)
+            doNewRequest(rq, false)
             currentPage.current = rq.pageInfo.pageNumber
         }
     }
@@ -158,18 +155,18 @@ function CubeLookDeep() {
 
     function onGoHome() {
         let current = prevRequests.current;
+        debugger
         if (current !== undefined) {
             let firstRequest = current.first();
             if (firstRequest !== undefined) {
-                prevRequests.current = new Stack()
-                doRequest(firstRequest)
+                prevRequests.current.clear()
+                doNewRequest(firstRequest)
                 currentPage.current = firstRequest.pageInfo.pageNumber
             }
         }
     }
 
     function getMetricsNameForSelect() {
-        // return [{ value: 'jack', label: 'Jack' }]
         let metric = metrics.find((v) => v.code.length > 0);
         return metric?.metrics.map((f) => {
             return {value: f.name, label: f.name}
@@ -178,28 +175,40 @@ function CubeLookDeep() {
 
     function onFilter(value: string) {
         let rq = {...request, codeFilter: value}
-        doRequest(rq)
+        doNewRequest(rq)
     }
 
-    function getRequestPath() {
-        let path: string[] = []
-        let rq= RequestCubeDeepCode[request.code]
-        for (let key in RequestCubeDeepCode) {
-            let requestCubeDeepCode = RequestCubeDeepCode[key as RequestCubeDeepCodeKey]
-            let cubeDeepName = RequestCubeDeepName[requestCubeDeepCode].parent
-            path.push(cubeDeepName)
-            if (rq === key) {
-                return path;
-            }
+    function getRequestPath(): string[] {
+        let requests : RequestCubeDeep[] = prevRequests.current.items()
+        debugger
+        //requests.push(request)
+        return  requests.map((i) => i.label + getCriteria(i))
+    }
+
+    function getCriteria(rq: RequestCubeDeep) {
+        if (rq.shop !== undefined) {
+            return "(" + rq.shop + ")"
         }
-        return path
+        if (rq.contract !== undefined) {
+            return "(" + rq.contract + ")"
+        }
+        if (rq.org !== undefined) {
+            return "(" + rq.org + ")"
+        }
+        if (rq.gosb !== undefined) {
+            return "(" + rq.gosb + ")"
+        }
+        if (rq.tb !== undefined) {
+            return "(" + rq.tb + ")"
+        }
+        return ""
     }
 
     const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
         //console.log(page);
         currentPage.current = page;
         let rq: RequestCubeDeep = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
-        doRequest(rq)
+        doNewRequest(rq)
     };
 
     const gridStyleCell1: React.CSSProperties = {
@@ -221,19 +230,19 @@ function CubeLookDeep() {
                                      onChange={(e) => onFilter(e.target.value)}></Input>
                     </Col>
                     <Col span={12}>
-                        <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
+                         <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
                         <Tooltip title="В начало">
                             <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
                         </Tooltip>
                     </Col>
                 </Row>
                 <Row style={{marginTop: '10px'}}>
-                    <Col span={12}>
+                    <Col span={24}>
                         <Tooltip title="Сортировка">
                             <Button size={"small"} onClick={onSortDirection}>{sortDirection === SortDirection.ASC ? ARROW_UP : ARROW_DOWN}</Button>
                             <Select
                                 size={"small"}
-                                style={{width: 120}}
+                                style={{width: '50%'}}
                                 onChange={onSortMetric}
                                 options={getMetricsNameForSelect()}/>
                         </Tooltip>
@@ -263,7 +272,7 @@ function CubeLookDeep() {
                                             }
                                         </ul>
                                     </Card.Grid>
-                                     <Card.Grid style={gridStyleCell2}><Button type="primary" onClick={onclick => onLookDeep(metric.code)}>
+                                     <Card.Grid style={gridStyleCell2}><Button type="primary" onClick={(onclick) => onLookDeep(metric.code)}>
                                         Открыть{BOOK}</Button>
                                     </Card.Grid>
                                 </Flex>}

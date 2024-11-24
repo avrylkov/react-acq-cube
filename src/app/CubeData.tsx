@@ -36,9 +36,11 @@ function CubeData() {
                                          }}
                             />
                         </Tooltip>
-                        <Button style={{marginTop: '5px'}} onClick={(e) => {
-                            navigate('/login')
-                        }}>{DOOR}</Button>
+                        <Tooltip title={'Выход'}>
+                            <Button style={{marginTop: '5px'}} onClick={(e) => {
+                                navigate('/login')
+                            }}>{DOOR}</Button>
+                        </Tooltip>
                     </Flex>
                 </Header>
                 {projection === Projection.DEEP && <CubeLookDeep></CubeLookDeep>}

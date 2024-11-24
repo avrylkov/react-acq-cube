@@ -77,8 +77,10 @@ export type RequestCubeLookUp = {
 interface IStack<T> {
     push(item: T): void;
     pop(): T | undefined;
-    peek(): T | undefined;
+    last(): T | undefined;
+    get(index: number): T;
     size(): number;
+    clear(): void;
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -86,7 +88,9 @@ export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];
 
-    constructor(private capacity: number = Infinity) {}
+    constructor(init: T, private capacity: number = Infinity) {
+        this.storage.push(init)
+    }
 
     push(item: T): void {
         if (this.size() === this.capacity) {
@@ -99,9 +103,18 @@ export class Stack<T> implements IStack<T> {
         return this.storage.pop();
     }
 
-    peek(): T | undefined {
-        return this.storage[this.size() - 1];
+    last(): T | undefined {
+        return this.storage[this.storage.length - 1];
     }
+
+    get(index: number): T {
+        return this.storage[index];
+    }
+
+    items(): T[] {
+        return this.storage.slice(0);
+    }
+
 
     size(): number {
         return this.storage.length;
@@ -109,6 +122,10 @@ export class Stack<T> implements IStack<T> {
 
     first(): T | undefined {
         return this.storage[0]
+    }
+
+    clear() {
+       this.storage.splice(0, this.storage.length)
     }
 
 }
@@ -123,3 +140,9 @@ export class UserState {
     login: string
     time: Date
 }
+
+export const URL = 'http://localhost:8081/deep'
+export const MEDIA_TYPE = 'application/json'
+
+// export const URL = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
+// export const MEDIA_TYPE = 'text/plain'
