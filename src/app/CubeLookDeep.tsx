@@ -13,8 +13,22 @@ import {
     URL
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
-import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Spin, Tooltip} from "antd";
-import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerStyleDeep} from "./Style";
+import {
+    Breadcrumb,
+    Button,
+    Card,
+    Col,
+    Flex,
+    Input,
+    Pagination,
+    PaginationProps,
+    Row,
+    Select,
+    Spin,
+    Tooltip
+} from "antd";
+import {ARROW_DOWN, ARROW_UP, BOOK, FIND, headerStyleDeep} from "./Style";
+import {ItemType} from "antd/es/breadcrumb/Breadcrumb";
 
 const PAGE_SIZE = 20;
 
@@ -54,7 +68,7 @@ function CubeLookDeep() {
 
     useEffect(() => {
         const fetchData = async () => {
-            await sleep(500);
+            await sleep(250);
             getMetric().then(data => {
                 let page: PageDateDeep = data
                 total.current = page.total
@@ -73,6 +87,7 @@ function CubeLookDeep() {
         if (isHistory) {
             prevRequests.current.push(newRq)
         }
+        currentPage.current = newRq.pageInfo.pageNumber
         setRequest(newRq)
     }
 
@@ -102,15 +117,6 @@ function CubeLookDeep() {
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.SHOP].parent, code: RequestCubeDeepCode.SHOP, shop: metricCode,
                 pageInfo: pageInfo, codeFilter: undefined}
             doNewRequest(rq)
-        }
-    }
-
-    function onGoBack() {
-        prevRequests.current.pop()
-        let rq = prevRequests.current.last()
-        if (rq !== undefined) {
-            doNewRequest(rq, false)
-            currentPage.current = rq.pageInfo.pageNumber
         }
     }
 
@@ -151,18 +157,6 @@ function CubeLookDeep() {
         setMetrics(metrics.splice(0))
     }
 
-    function onGoHome() {
-        let current = prevRequests.current;
-        if (current !== undefined) {
-            let firstRequest = current.first();
-            if (firstRequest !== undefined) {
-                prevRequests.current.clear()
-                doNewRequest(firstRequest)
-                currentPage.current = firstRequest.pageInfo.pageNumber
-            }
-        }
-    }
-
     function getMetricsNameForSelect() {
         let metric = metrics.find((v) => v.code.length > 0);
         return metric?.metrics.map((f) => {
@@ -175,9 +169,9 @@ function CubeLookDeep() {
         doNewRequest(rq)
     }
 
-    function getRequestPath(): string[] {
+    function getRequestPath2(): ItemType[] {
         let requests : RequestCubeDeep[] = prevRequests.current.items()
-        return  requests.map((i) => i.label + getCriteria(i))
+        return requests.map((i, index) => {return {title: getCrumbElement(i.label + getCriteria(i), index)} as ItemType;})
     }
 
     function getCriteria(rq: RequestCubeDeep) {
@@ -201,8 +195,8 @@ function CubeLookDeep() {
 
     const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
         //console.log(page);
-        currentPage.current = page;
-        let rq: RequestCubeDeep = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
+        let pageInfo: PageInfo = {...request.pageInfo, pageNumber: page}
+        let rq: RequestCubeDeep = {...request, pageInfo: pageInfo}
         doNewRequest(rq)
     };
 
@@ -214,6 +208,24 @@ function CubeLookDeep() {
         width: '40%'
     };
 
+    function onCrumbClick(key : number) {
+        console.log(key);
+        if ((key + 1) < prevRequests.current.size()) {
+            let n = prevRequests.current.size() - (key + 1)
+            prevRequests.current.removeLast(n)
+            let last = prevRequests.current.last();
+            if (last !== undefined) {
+                doNewRequest(last, false)
+            }
+        }
+    }
+
+    function getCrumbElement(label: string, key: number) {
+        return <a style={{color: "yellow"}} onClick={(e) => {
+            onCrumbClick(key)
+        }}>{label}</a>
+    }
+
     return (
         <div>
             <Header style={headerStyleDeep}>
@@ -223,12 +235,6 @@ function CubeLookDeep() {
                                      placeholder="Поиск"
                                      value = {request.codeFilter}
                                      onChange={(e) => onFilter(e.target.value)}></Input>
-                    </Col>
-                    <Col span={12}>
-                         <Button onClick={onclick => onGoBack()} size={"small"} >{GO_BACK} Назад</Button>
-                        <Tooltip title="В начало">
-                            <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
-                        </Tooltip>
                     </Col>
                 </Row>
                 <Row style={{marginTop: '10px'}}>
@@ -243,11 +249,9 @@ function CubeLookDeep() {
                         </Tooltip>
                     </Col>
                 </Row>
-                <Flex gap={"small"} vertical={false} style={{margin: '5px'}}>
-                    {
-                        getRequestPath().map((v) => (<div>{ARROW_RIGHT} {v}</div>))
-                    }
-                </Flex>
+                <Breadcrumb
+                    items={getRequestPath2()}
+                />
             </Header>
 
             <Content style={{padding: '10px 20px 10px'}}>

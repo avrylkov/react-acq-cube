@@ -123,6 +123,7 @@ interface IStack<T> {
     get(index: number): T;
     size(): number;
     clear(): void;
+    removeLast(deleteCount: number): void;
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -168,6 +169,10 @@ export class Stack<T> implements IStack<T> {
 
     clear() {
        this.storage.splice(0, this.storage.length)
+    }
+
+    removeLast(deleteCount: number) {
+        this.storage.splice(this.storage.length - deleteCount)
     }
 
 }
