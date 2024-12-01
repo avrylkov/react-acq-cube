@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {
     MEDIA_TYPE,
     Metric,
-    PageDate,
+    PageDateDeep,
     PageInfo,
     RequestCubeDeep,
     RequestCubeDeepCode,
@@ -14,7 +14,7 @@ import {
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {Button, Card, Col, Flex, Input, Pagination, PaginationProps, Row, Select, Spin, Tooltip} from "antd";
-import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerStyle} from "./Style";
+import {ARROW_DOWN, ARROW_RIGHT, ARROW_UP, BOOK, FIND, GO_BACK, GO_HOME, headerStyleDeep} from "./Style";
 
 const PAGE_SIZE = 20;
 
@@ -56,7 +56,7 @@ function CubeLookDeep() {
         const fetchData = async () => {
             await sleep(500);
             getMetric().then(data => {
-                let page: PageDate = data
+                let page: PageDateDeep = data
                 total.current = page.total
                 setMetrics(page.dataCubes)
                 loading.current = false
@@ -70,7 +70,6 @@ function CubeLookDeep() {
 
     function doNewRequest(newRq: RequestCubeDeep, isHistory: boolean = true) {
         loading.current = true
-        // debugger
         if (isHistory) {
             prevRequests.current.push(newRq)
         }
@@ -107,7 +106,6 @@ function CubeLookDeep() {
     }
 
     function onGoBack() {
-        debugger
         prevRequests.current.pop()
         let rq = prevRequests.current.last()
         if (rq !== undefined) {
@@ -155,7 +153,6 @@ function CubeLookDeep() {
 
     function onGoHome() {
         let current = prevRequests.current;
-        debugger
         if (current !== undefined) {
             let firstRequest = current.first();
             if (firstRequest !== undefined) {
@@ -180,8 +177,6 @@ function CubeLookDeep() {
 
     function getRequestPath(): string[] {
         let requests : RequestCubeDeep[] = prevRequests.current.items()
-        debugger
-        //requests.push(request)
         return  requests.map((i) => i.label + getCriteria(i))
     }
 
@@ -221,7 +216,7 @@ function CubeLookDeep() {
 
     return (
         <div>
-            <Header style={headerStyle}>
+            <Header style={headerStyleDeep}>
                 <Row>
                     <Col span={12}>
                         {FIND}<Input size={"small"} style={{width: '50%'}}

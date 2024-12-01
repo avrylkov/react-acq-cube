@@ -1,6 +1,46 @@
-export type PageDate = {
+export type PageDateDeep = {
     total: number
     dataCubes: Metric[]
+}
+
+export type PageDateLookUp = {
+    total: number
+    dataCubes: TbTreeData[]
+}
+
+export interface TbTreeData {
+    code: string
+    gosbs: GosbTreeData[]
+}
+
+export interface GosbTreeData {
+    code: string
+    organizations: OrgTreeData[]
+}
+
+export interface OrgTreeData {
+    code: string
+    contracts: ContrTreeData[]
+}
+
+export interface ContrTreeData {
+    code: string
+    shops: ShopTreeData[]
+}
+
+export interface ShopTreeData {
+    code: string
+    terminals: TerminalTreeData[]
+}
+
+export interface TerminalTreeData {
+    code: string
+}
+
+export interface TreeData {
+    key: string
+    title: string
+    children: TreeData[]
 }
 
 export type Metric = {
@@ -69,9 +109,11 @@ export type RequestCubeDeep = {
 }
 
 export type RequestCubeLookUp = {
+    pageInfo: PageInfo
     contract: string
     organization: string
     shop: string
+    terminal: string
 }
 
 interface IStack<T> {

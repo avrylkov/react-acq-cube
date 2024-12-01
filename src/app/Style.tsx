@@ -10,7 +10,16 @@ export const COPYRIGHT = <>&#169;</>;
 export const BOOK   = <>&#x1F56E;</>;
 export const DOOR   = <>&#x1F6AA;</>;
 
-export const headerStyle: React.CSSProperties = {
+export const headerStyleLookUp: React.CSSProperties = {
+    textAlign: 'center',
+    color: '#fff',
+    height: '60px',
+    lineHeight: '15px',
+    backgroundColor: '#4096ff',
+
+};
+
+export const headerStyleDeep: React.CSSProperties = {
     textAlign: 'center',
     color: '#fff',
     height: '120px',

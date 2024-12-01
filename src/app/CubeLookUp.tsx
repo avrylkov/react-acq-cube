@@ -1,45 +1,29 @@
-import {Input, Tree, TreeProps, Typography} from "antd";
-import { DownOutlined } from '@ant-design/icons';
+import {Input, Pagination, PaginationProps, Tree, TreeProps} from "antd";
+import {DownOutlined} from '@ant-design/icons';
 import React, {useEffect, useRef, useState} from "react";
-import {RequestCubeLookUp} from "./types";
-import {Header} from "antd/es/layout/layout";
-import {FIND, headerStyle} from "./Style";
+import {
+    ContrTreeData,
+    GosbTreeData,
+    OrgTreeData, PageDateLookUp,
+    RequestCubeLookUp,
+    ShopTreeData,
+    TbTreeData,
+    TerminalTreeData,
+    TreeData
+} from "./types";
+import {Content, Header} from "antd/es/layout/layout";
+import {FIND, headerStyleLookUp} from "./Style";
 
-interface TbTreeData {
-    code: string
-    gosbs: GosbTreeData[]
-}
-
-interface GosbTreeData {
-    code: string
-    organizations: OrgTreeData[]
-}
-
-interface OrgTreeData {
-    code: string
-    contracts: ContrTreeData[]
-}
-
-interface ContrTreeData {
-    code: string
-    shops: ShopTreeData[]
-}
-
-interface ShopTreeData {
-    code: string
-}
-
-interface TreeData {
-    key: string
-    title: string
-    children: TreeData[]
-}
+const PAGE_SIZE = 50;
 
 function CubeLookUp() {
 
-    const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:''});
+    const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
+        pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
     const [tbs, setTbs] = useState<TreeData[]>([]);
     const expandedKeys = useRef<string[]>([])
+    const total = useRef(0);
+    const currentPage = useRef(1);
 
     function getMetric() {
         return fetch('http://localhost:8081/look-up', {
@@ -61,7 +45,9 @@ function CubeLookUp() {
             })
     }
 
-    function mapTreeTb(tbData: TbTreeData[]): TreeData[] {
+    function mapTreeTb(pageData: PageDateLookUp): TreeData[] {
+        let tbData: TbTreeData[] = pageData.dataCubes;
+        total.current = pageData.total
         return tbData.map((tb) => {
                 return {key: tb.code, title: tb.code, children: mapTreeGosb(tb.gosbs)}
             }
@@ -91,7 +77,14 @@ function CubeLookUp() {
 
     function mapTreeShop(shops: ShopTreeData[]): TreeData[] {
         return shops.map((shop) => {
-                return {key: shop.code, title: shop.code, children: []}
+                return {key: shop.code, title: shop.code, children: mapTreeTerminal(shop.terminals)}
+            }
+        )
+    }
+
+    function mapTreeTerminal(terminals: TerminalTreeData[]): TreeData[] {
+        return terminals.map((terminal) => {
+                return {key: terminal.code, title: terminal.code, children: []}
             }
         )
     }
@@ -107,7 +100,10 @@ function CubeLookUp() {
 
         };
         //
-        if (request.organization?.length > 2 || request.contract?.length > 2 || request.shop?.length > 2) {
+        if (request.organization?.length > 2
+            || request.contract?.length > 2
+            || request.shop?.length > 2
+            || request.terminal?.length > 2) {
             fetchData();
         }
     }, [request]);
@@ -128,41 +124,71 @@ function CubeLookUp() {
     };
 
     function onFilterContract(value: string) {
-        let rq = {...request, organization: '', shop: '', contract: value}
-        setRequest(rq)
+        let rq: RequestCubeLookUp = {...request, organization: '', shop: '', terminal: '', contract: value,
+            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+        doRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
-        let rq = {...request, contract: '', shop: '', organization: value}
-        setRequest(rq)
+        let rq: RequestCubeLookUp = {...request, contract: '', shop: '', terminal: '', organization: value,
+            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+        doRequest(rq)
     }
 
     function onFilterShop(value: string) {
-        let rq = {...request, contract:'', organization: '', shop: value}
-            setRequest(rq)
+        let rq:RequestCubeLookUp = {...request, contract:'', organization: '', terminal: '', shop: value,
+            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+        doRequest(rq)
     }
 
+    function onFilterTerminal(value: string) {
+        let rq:RequestCubeLookUp = {...request, contract:'', organization: '', shop: '', terminal: value,
+            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+        doRequest(rq)
+    }
+
+    const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
+        let rq: RequestCubeLookUp = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
+        doRequest(rq)
+    };
+
+    function doRequest(rq: RequestCubeLookUp) {
+        currentPage.current = rq.pageInfo.pageNumber;
+        setRequest(rq)
+    }
 
     return (
         <div>
-            <Header style={headerStyle}>
+            <Header style={headerStyleLookUp}>
                 {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{ width: 200 }}
                              value ={request.organization} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
                 {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
                              value = {request.contract} onChange={(e) => onFilterContract(e.target.value)}></Input>
                 {FIND}<Input addonBefore="МИД ТСТ" size={"small"} style={{ width: 200 }}
                              value ={request.shop} onChange={(e) => onFilterShop(e.target.value)}></Input>
+                {FIND}<Input addonBefore="ТИД Терминала" size={"small"} style={{ width: 200 }}
+                             value ={request.terminal} onChange={(e) => onFilterTerminal(e.target.value)}></Input>
             </Header>
-            <Tree
-                showLine
-                switcherIcon={<DownOutlined />}
-                onSelect={onSelect}
-                defaultExpandAll
-                //defaultExpandedKeys={['10']}
-                expandedKeys={expandedKeys.current}
-                autoExpandParent={true}
-                treeData={tbs}
-            />
+            <Content style={{padding: '10px 20px 10px'}}>
+                <Tree
+                    showLine
+                    switcherIcon={<DownOutlined />}
+                    onSelect={onSelect}
+                    defaultExpandAll
+                    //defaultExpandedKeys={['10']}
+                    expandedKeys={expandedKeys.current}
+                    autoExpandParent={true}
+                    treeData={tbs}
+                />
+                <Pagination
+                    total={total.current}
+                    showTotal={(total) => `Всего ${total}`}
+                    defaultPageSize={PAGE_SIZE}
+                    defaultCurrent={1}
+                    pageSize={PAGE_SIZE}
+                    current={currentPage.current} onChange={onChangeCurrentPage}
+                />
+            </Content>
         </div>
     )
 

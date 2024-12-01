@@ -4,7 +4,7 @@ import CubeLookDeep from "./CubeLookDeep";
 import {Footer, Header} from "antd/es/layout/layout";
 import {Projection, UserState} from "./types";
 import CubeLookUp from "./CubeLookUp";
-import {COPYRIGHT, DOOR, footerStyle, headerStyle, layoutStyle} from "./Style";
+import {COPYRIGHT, DOOR, footerStyle, headerStyleLookUp, layoutStyle} from "./Style";
 import {useSelector} from "react-redux";
 import {Link, useNavigate} from "react-router-dom";
 
@@ -23,7 +23,7 @@ function CubeData() {
         <Layout style={layoutStyle}>
             {userState.login.length > 0 &&
              <div>
-                <Header style={headerStyle}>
+                <Header style={headerStyleLookUp}>
                     <Flex vertical={false} gap="small" style={{marginTop: '5px'}}>
                         <h3>Acquiring Cube{COPYRIGHT}</h3>
                         <Tooltip title={'Напраление проекции'}>
