@@ -88,7 +88,8 @@ export enum SortDirection {
 
 export enum Projection {
     DEEP,
-    LOOK_UP
+    LOOK_UP,
+    NONE
 }
 
 export type PageInfo = {
@@ -127,6 +128,11 @@ interface IStack<T> {
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export const DEEP_PAGE_SIZE = 20;
+export const FIRST_DEEP_REQUEST : RequestCubeDeep =
+     {label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
+        code: RequestCubeDeepCode.ALL,  pageInfo: {pageNumber : 1, pageSize : DEEP_PAGE_SIZE}}
 
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];

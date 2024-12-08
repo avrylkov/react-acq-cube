@@ -3,8 +3,15 @@ import {DownOutlined} from '@ant-design/icons';
 import React, {useEffect, useRef, useState} from "react";
 import {
     ContrTreeData,
+    DEEP_PAGE_SIZE,
     GosbTreeData,
-    OrgTreeData, PageDateLookUp,
+    OrgTreeData,
+    PageDateLookUp,
+    PageInfo,
+    Projection,
+    RequestCubeDeep,
+    RequestCubeDeepCode,
+    RequestCubeDeepName,
     RequestCubeLookUp,
     ShopTreeData,
     TbTreeData,
@@ -13,6 +20,8 @@ import {
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {FIND, headerStyleLookUp} from "./Style";
+import {useDispatch} from "react-redux";
+import {setDeepRequest, setProjection} from "../redux/store";
 
 const PAGE_SIZE = 50;
 
@@ -21,9 +30,11 @@ function CubeLookUp() {
     const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
         pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
     const [tbs, setTbs] = useState<TreeData[]>([]);
+    const tbsRef = useRef(tbs)
     const expandedKeys = useRef<string[]>([])
     const total = useRef(0);
     const currentPage = useRef(1);
+    const dispatch = useDispatch();
 
     function getMetric() {
         return fetch('http://localhost:8081/look-up', {
@@ -95,6 +106,7 @@ function CubeLookUp() {
                 //debugger
                 expandedKeys.current = getKeys(data)
                 setTbs(data)
+                tbsRef.current = data
                 //console.log(metrics)
             })
 
@@ -120,8 +132,88 @@ function CubeLookUp() {
     }
 
     const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
-        console.log('selected', selectedKeys, info);
+        //console.log('selected', selectedKeys, info);
+        let levels = info.node.pos.split('-')
+        let levelPath = getLevelPath(1, levels, tbsRef.current);
+        let pageInfo: PageInfo = {pageSize: DEEP_PAGE_SIZE, pageNumber: 1}
+        dispatch(setProjection(Projection.DEEP))
+        switch (levelPath.length) {
+            case 1:
+                dispatch(setDeepRequest(createRequestCubeDeepTb(levelPath, pageInfo)))
+                break
+            case 2:
+                dispatch(setDeepRequest(createRequestCubeDeepGosb(levelPath, pageInfo)))
+                break
+            case 3:
+                dispatch((setDeepRequest(createRequestCubeDeepOrg(levelPath, pageInfo))))
+                break
+            case 4:
+                dispatch((setDeepRequest(createRequestCubeDeepContract(levelPath, pageInfo))))
+                break
+            case 5:
+                dispatch((setDeepRequest(createRequestCubeDeepShop(levelPath, pageInfo))))
+                break
+        }
     };
+
+    function createRequestCubeDeepTb(levelPath: string[], pageInfo: PageInfo) {
+        let rq: RequestCubeDeep = {
+            label: RequestCubeDeepName[RequestCubeDeepCode.TB].parent,
+            code: RequestCubeDeepCode.TB,
+            tb: levelPath[0],
+            pageInfo: pageInfo
+        }
+        return rq
+    }
+
+    function createRequestCubeDeepGosb(levelPath: string[], pageInfo: PageInfo) {
+        let rq: RequestCubeDeep = {
+            label: RequestCubeDeepName[RequestCubeDeepCode.GOSB].parent,
+            code: RequestCubeDeepCode.GOSB,
+            tb: levelPath[0], gosb: levelPath[1], pageInfo: pageInfo
+        }
+        return rq
+    }
+
+    function createRequestCubeDeepOrg(levelPath: string[], pageInfo: PageInfo) {
+        let rq: RequestCubeDeep = {
+            label: RequestCubeDeepName[RequestCubeDeepCode.ORG].parent,
+            code: RequestCubeDeepCode.ORG,
+            tb: levelPath[0], gosb: levelPath[1], org: levelPath[2], pageInfo: pageInfo
+        }
+        return rq
+    }
+
+    function createRequestCubeDeepContract(levelPath: string[], pageInfo: PageInfo) {
+        let rq: RequestCubeDeep = {
+            label: RequestCubeDeepName[RequestCubeDeepCode.CONTRACT].parent,
+            code: RequestCubeDeepCode.CONTRACT,
+            tb: levelPath[0], gosb: levelPath[1], org: levelPath[2], contract: levelPath[3],
+            pageInfo: pageInfo
+        }
+        return rq
+    }
+
+    function createRequestCubeDeepShop(levelPath: string[], pageInfo: PageInfo) {
+        let rq: RequestCubeDeep = {
+            label: RequestCubeDeepName[RequestCubeDeepCode.SHOP].parent,
+            code: RequestCubeDeepCode.SHOP,
+            tb: levelPath[0], gosb: levelPath[1], org: levelPath[2], contract: levelPath[3], shop: levelPath[4],
+            pageInfo: pageInfo
+        }
+        return rq
+    }
+
+    function getLevelPath(curLevel : number, lelels: string[], data: TreeData[]): string[] {
+        let path: string[] = []
+        if (curLevel < lelels.length) {
+            path.push(data[Number(lelels[curLevel])].key)
+            let pathNext = getLevelPath(curLevel + 1, lelels, data[Number(lelels[curLevel])].children)
+            return [...path, ...pathNext]
+        }
+        return path
+    }
+
 
     function onFilterContract(value: string) {
         let rq: RequestCubeLookUp = {...request, organization: '', shop: '', terminal: '', contract: value,

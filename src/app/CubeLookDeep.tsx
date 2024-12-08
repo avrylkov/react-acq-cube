@@ -1,5 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {
+    DEEP_PAGE_SIZE,
+    FIRST_DEEP_REQUEST,
     MEDIA_TYPE,
     Metric,
     PageDateDeep,
@@ -27,19 +29,21 @@ import {
     Spin,
     Tooltip
 } from "antd";
-import {ARROW_DOWN, ARROW_UP, BOOK, FIND, headerStyleDeep} from "./Style";
+import {ARROW_DOWN, ARROW_UP, BOOK, FIND, GO_HOME, headerStyleDeep} from "./Style";
 import {ItemType} from "antd/es/breadcrumb/Breadcrumb";
-
-const PAGE_SIZE = 20;
-
+import {useDispatch, useSelector} from "react-redux";
+import {setDeepRequest} from "../redux/store";
 
 function CubeLookDeep() {
 
     const loading = useRef<boolean>(true);
     const [metrics, setMetrics] = useState<Metric[]>([]);
 
-    const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
-        code: RequestCubeDeepCode.ALL,  pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    // const [request, setRequest] = useState<RequestCubeDeep>({label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
+    //     code: RequestCubeDeepCode.ALL,  pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    const request: RequestCubeDeep = useSelector((state: any) => state.deepRequest);
+    const dispatch = useDispatch();
+
     const prevRequests = useRef(new Stack<RequestCubeDeep>(request));
 
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
@@ -88,11 +92,12 @@ function CubeLookDeep() {
             prevRequests.current.push(newRq)
         }
         currentPage.current = newRq.pageInfo.pageNumber
-        setRequest(newRq)
+        //setRequest(newRq)
+        dispatch(setDeepRequest(newRq))
     }
 
     function onLookDeep(metricCode: string) {
-        let pageInfo : PageInfo = {pageSize: PAGE_SIZE, pageNumber: currentPage.current}
+        let pageInfo : PageInfo = {pageSize: DEEP_PAGE_SIZE, pageNumber: currentPage.current}
         if (request.code === RequestCubeDeepCode.ALL) {
             let rq: RequestCubeDeep = {...request, label: RequestCubeDeepName[RequestCubeDeepCode.ALL_TB].parent, code: RequestCubeDeepCode.ALL_TB,
                 pageInfo: pageInfo, codeFilter: undefined }
@@ -226,6 +231,15 @@ function CubeLookDeep() {
         }}>{label}</a>
     }
 
+    function onGoHome() {
+        let current = prevRequests.current;
+        if (current !== undefined) {
+            prevRequests.current.clear()
+            doNewRequest(FIRST_DEEP_REQUEST)
+        }
+    }
+
+
     return (
         <div>
             <Header style={headerStyleDeep}>
@@ -235,6 +249,11 @@ function CubeLookDeep() {
                                      placeholder="Поиск"
                                      value = {request.codeFilter}
                                      onChange={(e) => onFilter(e.target.value)}></Input>
+                    </Col>
+                    <Col span={12}>
+                        <Tooltip title="В начало">
+                            <Button onClick={onclick => onGoHome()} size={"small"} >{GO_HOME}</Button>
+                        </Tooltip>
                     </Col>
                 </Row>
                 <Row style={{marginTop: '10px'}}>
@@ -281,9 +300,9 @@ function CubeLookDeep() {
                 <Pagination
                     total={total.current}
                     showTotal={(total) => `Всего ${total}`}
-                    defaultPageSize={PAGE_SIZE}
+                    defaultPageSize={DEEP_PAGE_SIZE}
                     defaultCurrent={1}
-                    pageSize={PAGE_SIZE}
+                    pageSize={DEEP_PAGE_SIZE}
                     current={currentPage.current} onChange={onChangeCurrentPage}
                 />
             </Content>
