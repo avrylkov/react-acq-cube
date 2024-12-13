@@ -239,6 +239,9 @@ function CubeLookDeep() {
         }
     }
 
+    function onCardTitleClick(code: string) {
+        console.log("onCardTitleClick", code, prevRequests.current.last()?.code)
+    }
 
     return (
         <div>
@@ -279,7 +282,7 @@ function CubeLookDeep() {
                 </Spin>
                 {
                     metrics.map((metric, index) => (
-                        <Card title={(index + 1) + ') ' + metric.code} size="small" style={{margin: '0px 0px 10px'}}>
+                        <Card title={<a onClick={(e) => onCardTitleClick(metric.code)}>{(index + 1) + ') ' + metric.code}</a>}  size="small" style={{margin: '0px 0px 10px'}}>
                             {request.code !== RequestCubeDeepCode.SHOP &&
                                 <Flex vertical={false}>
                                     <Card.Grid style={gridStyleCell1}>

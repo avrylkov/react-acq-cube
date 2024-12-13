@@ -4,7 +4,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {
     ContrTreeData,
     DEEP_PAGE_SIZE,
-    GosbTreeData,
+    GosbTreeData, LOOK_UP_PAGE_SIZE,
     OrgTreeData,
     PageDateLookUp,
     PageInfo,
@@ -20,21 +20,21 @@ import {
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {FIND, headerStyleLookUp} from "./Style";
-import {useDispatch} from "react-redux";
-import {setDeepRequest, setProjection} from "../redux/store";
-
-const PAGE_SIZE = 50;
+import {useDispatch, useSelector} from "react-redux";
+import {setDeepRequest, setLookUpRequest, setProjection} from "../redux/store";
 
 function CubeLookUp() {
 
-    const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
-        pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    // const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
+    //     pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    const request: RequestCubeLookUp = useSelector((state: any) => state.lookUpRequest());
+    const dispatch = useDispatch();
+
     const [tbs, setTbs] = useState<TreeData[]>([]);
     const tbsRef = useRef(tbs)
     const expandedKeys = useRef<string[]>([])
     const total = useRef(0);
     const currentPage = useRef(1);
-    const dispatch = useDispatch();
 
     function getMetric() {
         return fetch('http://localhost:8081/look-up', {
@@ -217,36 +217,37 @@ function CubeLookUp() {
 
     function onFilterContract(value: string) {
         let rq: RequestCubeLookUp = {...request, organization: '', shop: '', terminal: '', contract: value,
-            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
         let rq: RequestCubeLookUp = {...request, contract: '', shop: '', terminal: '', organization: value,
-            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterShop(value: string) {
         let rq:RequestCubeLookUp = {...request, contract:'', organization: '', terminal: '', shop: value,
-            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterTerminal(value: string) {
         let rq:RequestCubeLookUp = {...request, contract:'', organization: '', shop: '', terminal: value,
-            pageInfo: {pageSize: PAGE_SIZE, pageNumber: 1}}
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
-        let rq: RequestCubeLookUp = {...request, pageInfo: {pageSize: PAGE_SIZE, pageNumber: page}}
+        let rq: RequestCubeLookUp = {...request, pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: page}}
         doRequest(rq)
     };
 
     function doRequest(rq: RequestCubeLookUp) {
         currentPage.current = rq.pageInfo.pageNumber;
-        setRequest(rq)
+        dispatch(setLookUpRequest(rq))
+        //setRequest(rq)
     }
 
     return (
@@ -275,9 +276,9 @@ function CubeLookUp() {
                 <Pagination
                     total={total.current}
                     showTotal={(total) => `Всего ${total}`}
-                    defaultPageSize={PAGE_SIZE}
+                    defaultPageSize={LOOK_UP_PAGE_SIZE}
                     defaultCurrent={1}
-                    pageSize={PAGE_SIZE}
+                    pageSize={LOOK_UP_PAGE_SIZE}
                     current={currentPage.current} onChange={onChangeCurrentPage}
                 />
             </Content>

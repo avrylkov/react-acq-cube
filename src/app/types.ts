@@ -134,6 +134,11 @@ export const FIRST_DEEP_REQUEST : RequestCubeDeep =
      {label: RequestCubeDeepName[RequestCubeDeepCode.ALL].parent,
         code: RequestCubeDeepCode.ALL,  pageInfo: {pageNumber : 1, pageSize : DEEP_PAGE_SIZE}}
 
+export const LOOK_UP_PAGE_SIZE = 50;
+export const FIRST_LOOK_UP_REQUEST : RequestCubeLookUp =
+    {organization:'', contract:'', shop:'', terminal: '',
+        pageInfo: {pageNumber : 1, pageSize : LOOK_UP_PAGE_SIZE}}
+
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];
 
