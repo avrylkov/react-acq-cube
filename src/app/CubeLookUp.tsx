@@ -4,7 +4,9 @@ import React, {useEffect, useRef, useState} from "react";
 import {
     ContrTreeData,
     DEEP_PAGE_SIZE,
-    GosbTreeData, LOOK_UP_PAGE_SIZE,
+    GosbTreeData,
+    LOOK_UP_LEVEL,
+    LOOK_UP_PAGE_SIZE, MEDIA_TYPE,
     OrgTreeData,
     PageDateLookUp,
     PageInfo,
@@ -16,7 +18,7 @@ import {
     ShopTreeData,
     TbTreeData,
     TerminalTreeData,
-    TreeData
+    TreeData, URL_LOOK_UP
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {FIND, headerStyleLookUp} from "./Style";
@@ -27,7 +29,7 @@ function CubeLookUp() {
 
     // const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
     //     pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
-    const request: RequestCubeLookUp = useSelector((state: any) => state.lookUpRequest());
+    const request: RequestCubeLookUp = useSelector((state: any) => state.lookUpRequest);
     const dispatch = useDispatch();
 
     const [tbs, setTbs] = useState<TreeData[]>([]);
@@ -37,11 +39,11 @@ function CubeLookUp() {
     const currentPage = useRef(1);
 
     function getMetric() {
-        return fetch('http://localhost:8081/look-up', {
+        return fetch(URL_LOOK_UP, {
             method: "POST",
             //mode: "no-cors",
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': MEDIA_TYPE
             },
             body: JSON.stringify(request)
         })
@@ -111,11 +113,7 @@ function CubeLookUp() {
             })
 
         };
-        //
-        if (request.organization?.length > 2
-            || request.contract?.length > 2
-            || request.shop?.length > 2
-            || request.terminal?.length > 2) {
+        if (request.code.length > 2) {
             fetchData();
         }
     }, [request]);
@@ -131,7 +129,7 @@ function CubeLookUp() {
         }
     }
 
-    const onSelect: TreeProps['onSelect'] = (selectedKeys, info) => {
+    const onSelectTreeNone: TreeProps['onSelect'] = (selectedKeys, info) => {
         //console.log('selected', selectedKeys, info);
         let levels = info.node.pos.split('-')
         let levelPath = getLevelPath(1, levels, tbsRef.current);
@@ -216,25 +214,25 @@ function CubeLookUp() {
 
 
     function onFilterContract(value: string) {
-        let rq: RequestCubeLookUp = {...request, organization: '', shop: '', terminal: '', contract: value,
+        let rq: RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.CONTRACT, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
-        let rq: RequestCubeLookUp = {...request, contract: '', shop: '', terminal: '', organization: value,
+        let rq: RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.ORGANIZATION, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterShop(value: string) {
-        let rq:RequestCubeLookUp = {...request, contract:'', organization: '', terminal: '', shop: value,
+        let rq:RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.SHOP, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
 
     function onFilterTerminal(value: string) {
-        let rq:RequestCubeLookUp = {...request, contract:'', organization: '', shop: '', terminal: value,
+        let rq:RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.TERMINAL, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
         doRequest(rq)
     }
@@ -254,19 +252,19 @@ function CubeLookUp() {
         <div>
             <Header style={headerStyleLookUp}>
                 {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{ width: 200 }}
-                             value ={request.organization} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
+                             value ={request.level === LOOK_UP_LEVEL.ORGANIZATION ? request.code : ''} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
                 {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
-                             value = {request.contract} onChange={(e) => onFilterContract(e.target.value)}></Input>
+                             value = {request.level === LOOK_UP_LEVEL.CONTRACT ? request.code : ''} onChange={(e) => onFilterContract(e.target.value)}></Input>
                 {FIND}<Input addonBefore="МИД ТСТ" size={"small"} style={{ width: 200 }}
-                             value ={request.shop} onChange={(e) => onFilterShop(e.target.value)}></Input>
+                             value ={request.level === LOOK_UP_LEVEL.SHOP ? request.code : ''} onChange={(e) => onFilterShop(e.target.value)}></Input>
                 {FIND}<Input addonBefore="ТИД Терминала" size={"small"} style={{ width: 200 }}
-                             value ={request.terminal} onChange={(e) => onFilterTerminal(e.target.value)}></Input>
+                             value ={request.level === LOOK_UP_LEVEL.TERMINAL ? request.code : ''} onChange={(e) => onFilterTerminal(e.target.value)}></Input>
             </Header>
             <Content style={{padding: '10px 20px 10px'}}>
                 <Tree
                     showLine
                     switcherIcon={<DownOutlined />}
-                    onSelect={onSelect}
+                    onSelect={onSelectTreeNone}
                     defaultExpandAll
                     //defaultExpandedKeys={['10']}
                     expandedKeys={expandedKeys.current}

@@ -109,12 +109,20 @@ export type RequestCubeDeep = {
     shop?: string
 }
 
+export enum LOOK_UP_LEVEL {
+    TB ='TB',
+    GOSB = 'GOSB',
+    ORGANIZATION = 'ORGANIZATION',
+    CONTRACT = 'CONTRACT',
+    SHOP = 'SHOP',
+    TERMINAL = 'TERMINAL',
+    NONE = 'NONE'
+}
+
 export type RequestCubeLookUp = {
     pageInfo: PageInfo
-    contract: string
-    organization: string
-    shop: string
-    terminal: string
+    code: string
+    level: LOOK_UP_LEVEL
 }
 
 interface IStack<T> {
@@ -136,8 +144,7 @@ export const FIRST_DEEP_REQUEST : RequestCubeDeep =
 
 export const LOOK_UP_PAGE_SIZE = 50;
 export const FIRST_LOOK_UP_REQUEST : RequestCubeLookUp =
-    {organization:'', contract:'', shop:'', terminal: '',
-        pageInfo: {pageNumber : 1, pageSize : LOOK_UP_PAGE_SIZE}}
+    {level: LOOK_UP_LEVEL.NONE, code: '', pageInfo: {pageNumber : 1, pageSize : LOOK_UP_PAGE_SIZE}}
 
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];
@@ -199,8 +206,10 @@ export class UserState {
     time: Date
 }
 
-export const URL = 'http://localhost:8081/deep'
+export const URL_DEEP = 'http://localhost:8081/deep'
+export const URL_LOOK_UP = 'http://localhost:8081/look-up'
 export const MEDIA_TYPE = 'application/json'
 
-// export const URL = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
+// export const URL_DEEP = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
+//export const URL_LOOK_UP = 'http://localhost:8081/deep'
 // export const MEDIA_TYPE = 'text/plain'

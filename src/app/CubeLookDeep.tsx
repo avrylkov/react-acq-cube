@@ -2,17 +2,21 @@ import React, {useEffect, useRef, useState} from "react";
 import {
     DEEP_PAGE_SIZE,
     FIRST_DEEP_REQUEST,
+    LOOK_UP_LEVEL,
+    LOOK_UP_PAGE_SIZE,
     MEDIA_TYPE,
     Metric,
     PageDateDeep,
     PageInfo,
+    Projection,
     RequestCubeDeep,
     RequestCubeDeepCode,
     RequestCubeDeepName,
+    RequestCubeLookUp,
     sleep,
     SortDirection,
     Stack,
-    URL
+    URL_DEEP
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {
@@ -32,7 +36,7 @@ import {
 import {ARROW_DOWN, ARROW_UP, BOOK, FIND, GO_HOME, headerStyleDeep} from "./Style";
 import {ItemType} from "antd/es/breadcrumb/Breadcrumb";
 import {useDispatch, useSelector} from "react-redux";
-import {setDeepRequest} from "../redux/store";
+import {setDeepRequest, setLookUpRequest, setProjection} from "../redux/store";
 
 function CubeLookDeep() {
 
@@ -54,7 +58,7 @@ function CubeLookDeep() {
 
 
     function getMetric() {
-        return fetch(URL, {
+        return fetch(URL_DEEP, {
             method: "POST",
             //mode: "no-cors",
             headers: {
@@ -239,9 +243,36 @@ function CubeLookDeep() {
         }
     }
 
-    function onCardTitleClick(code: string) {
+    function onCardMetricTitleClick(code: string) {
         console.log("onCardTitleClick", code, prevRequests.current.last()?.code)
+        let codeRq = prevRequests.current.last()?.code;
+        let rqLookUp: RequestCubeLookUp = {level: LOOK_UP_LEVEL.NONE, code:'',
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
+        }
+        switch (codeRq) {
+            case RequestCubeDeepCode.ALL_TB:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.TB, code: code}
+                break
+            case RequestCubeDeepCode.TB:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.GOSB, code: code}
+                break
+            case RequestCubeDeepCode.GOSB:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.ORGANIZATION, code: code}
+                break
+            case RequestCubeDeepCode.ORG:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.CONTRACT, code: code}
+                break
+            case RequestCubeDeepCode.CONTRACT:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.SHOP, code: code}
+                break
+            case RequestCubeDeepCode.SHOP:
+                rqLookUp = {...rqLookUp, level: LOOK_UP_LEVEL.TERMINAL, code: code}
+                break
+        }
+        dispatch(setProjection(Projection.LOOK_UP))
+        dispatch(setLookUpRequest(rqLookUp))
     }
+
 
     return (
         <div>
@@ -282,7 +313,7 @@ function CubeLookDeep() {
                 </Spin>
                 {
                     metrics.map((metric, index) => (
-                        <Card title={<a onClick={(e) => onCardTitleClick(metric.code)}>{(index + 1) + ') ' + metric.code}</a>}  size="small" style={{margin: '0px 0px 10px'}}>
+                        <Card title={<a onClick={(e) => onCardMetricTitleClick(metric.code)}>{(index + 1) + ') ' + metric.code}</a>}  size="small" style={{margin: '0px 0px 10px'}}>
                             {request.code !== RequestCubeDeepCode.SHOP &&
                                 <Flex vertical={false}>
                                     <Card.Grid style={gridStyleCell1}>
