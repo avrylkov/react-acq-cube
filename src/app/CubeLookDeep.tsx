@@ -4,7 +4,6 @@ import {
     FIRST_DEEP_REQUEST,
     LOOK_UP_LEVEL,
     LOOK_UP_PAGE_SIZE,
-    MEDIA_TYPE,
     Metric,
     PageDateDeep,
     PageInfo,
@@ -15,8 +14,7 @@ import {
     RequestCubeLookUp,
     sleep,
     SortDirection,
-    Stack,
-    URL_DEEP
+    Stack
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {
@@ -58,11 +56,13 @@ function CubeLookDeep() {
 
 
     function getMetric() {
-        return fetch(URL_DEEP, {
+        let url: string = process.env.REACT_APP_URL_DEEP ? process.env.REACT_APP_URL_DEEP : '-'
+        let media = process.env.REACT_APP_MEDIA_TYPE ? process.env.REACT_APP_MEDIA_TYPE : 'application/json'
+        return fetch(url, {
             method: "POST",
             //mode: "no-cors",
             headers: {
-                'Content-Type': MEDIA_TYPE
+                'Content-Type': media
             },
             body: JSON.stringify(request)
         })
@@ -175,7 +175,7 @@ function CubeLookDeep() {
 
     function onFilter(value: string) {
         let rq = {...request, codeFilter: value}
-        doNewRequest(rq)
+        doNewRequest(rq, false)
     }
 
     function getRequestPath2(): ItemType[] {
@@ -206,7 +206,7 @@ function CubeLookDeep() {
         //console.log(page);
         let pageInfo: PageInfo = {...request.pageInfo, pageNumber: page}
         let rq: RequestCubeDeep = {...request, pageInfo: pageInfo}
-        doNewRequest(rq)
+        doNewRequest(rq, false)
     };
 
     const gridStyleCell1: React.CSSProperties = {
@@ -303,6 +303,7 @@ function CubeLookDeep() {
                     </Col>
                 </Row>
                 <Breadcrumb
+                    separator="=>"
                     items={getRequestPath2()}
                 />
             </Header>

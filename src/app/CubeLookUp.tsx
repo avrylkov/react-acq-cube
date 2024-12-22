@@ -1,4 +1,4 @@
-import {Input, Pagination, PaginationProps, Tree, TreeProps} from "antd";
+import {Col, Input, Pagination, PaginationProps, Row, Tree, TreeProps} from "antd";
 import {DownOutlined} from '@ant-design/icons';
 import React, {useEffect, useRef, useState} from "react";
 import {
@@ -6,7 +6,7 @@ import {
     DEEP_PAGE_SIZE,
     GosbTreeData,
     LOOK_UP_LEVEL,
-    LOOK_UP_PAGE_SIZE, MEDIA_TYPE,
+    LOOK_UP_PAGE_SIZE,
     OrgTreeData,
     PageDateLookUp,
     PageInfo,
@@ -18,7 +18,7 @@ import {
     ShopTreeData,
     TbTreeData,
     TerminalTreeData,
-    TreeData, URL_LOOK_UP
+    TreeData
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
 import {FIND, headerStyleLookUp} from "./Style";
@@ -39,11 +39,13 @@ function CubeLookUp() {
     const currentPage = useRef(1);
 
     function getMetric() {
-        return fetch(URL_LOOK_UP, {
+        let url = process.env.REACT_APP_URL_LOOK_UP ? process.env.REACT_APP_URL_LOOK_UP : '-'
+        let media = process.env.REACT_APP_MEDIA_TYPE ? process.env.REACT_APP_MEDIA_TYPE : 'application/json'
+        return fetch(url, {
             method: "POST",
             //mode: "no-cors",
             headers: {
-                'Content-Type': MEDIA_TYPE
+                'Content-Type': media
             },
             body: JSON.stringify(request)
         })
@@ -202,7 +204,7 @@ function CubeLookUp() {
         return rq
     }
 
-    function getLevelPath(curLevel : number, lelels: string[], data: TreeData[]): string[] {
+    function getLevelPath(curLevel: number, lelels: string[], data: TreeData[]): string[] {
         let path: string[] = []
         if (curLevel < lelels.length) {
             path.push(data[Number(lelels[curLevel])].key)
@@ -214,26 +216,34 @@ function CubeLookUp() {
 
 
     function onFilterContract(value: string) {
-        let rq: RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.CONTRACT, code: value,
-            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
+        let rq: RequestCubeLookUp = {
+            ...request, level: LOOK_UP_LEVEL.CONTRACT, code: value,
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
+        }
         doRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
-        let rq: RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.ORGANIZATION, code: value,
-            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
+        let rq: RequestCubeLookUp = {
+            ...request, level: LOOK_UP_LEVEL.ORGANIZATION, code: value,
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
+        }
         doRequest(rq)
     }
 
     function onFilterShop(value: string) {
-        let rq:RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.SHOP, code: value,
-            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
+        let rq: RequestCubeLookUp = {
+            ...request, level: LOOK_UP_LEVEL.SHOP, code: value,
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
+        }
         doRequest(rq)
     }
 
     function onFilterTerminal(value: string) {
-        let rq:RequestCubeLookUp = {...request, level: LOOK_UP_LEVEL.TERMINAL, code: value,
-            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}}
+        let rq: RequestCubeLookUp = {
+            ...request, level: LOOK_UP_LEVEL.TERMINAL, code: value,
+            pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
+        }
         doRequest(rq)
     }
 
@@ -251,19 +261,33 @@ function CubeLookUp() {
     return (
         <div>
             <Header style={headerStyleLookUp}>
-                {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{ width: 200 }}
-                             value ={request.level === LOOK_UP_LEVEL.ORGANIZATION ? request.code : ''} onChange={(e) => onFilterOrganization(e.target.value)}></Input>
-                {FIND}<Input addonBefore="N договора" size={"small"} style={{ width: 200 }}
-                             value = {request.level === LOOK_UP_LEVEL.CONTRACT ? request.code : ''} onChange={(e) => onFilterContract(e.target.value)}></Input>
-                {FIND}<Input addonBefore="МИД ТСТ" size={"small"} style={{ width: 200 }}
-                             value ={request.level === LOOK_UP_LEVEL.SHOP ? request.code : ''} onChange={(e) => onFilterShop(e.target.value)}></Input>
-                {FIND}<Input addonBefore="ТИД Терминала" size={"small"} style={{ width: 200 }}
-                             value ={request.level === LOOK_UP_LEVEL.TERMINAL ? request.code : ''} onChange={(e) => onFilterTerminal(e.target.value)}></Input>
+                <Row>
+                    <Col>
+                        {FIND}<Input addonBefore="ИНН Организации" size={"small"} style={{width: 250}}
+                                     value={request.level === LOOK_UP_LEVEL.ORGANIZATION ? request.code : ''}
+                                     onChange={(e) => onFilterOrganization(e.target.value)}></Input>
+                    </Col>
+                    <Col>
+                        {FIND}<Input addonBefore="N договора" size={"small"} style={{width: 250}}
+                                     value={request.level === LOOK_UP_LEVEL.CONTRACT ? request.code : ''}
+                                     onChange={(e) => onFilterContract(e.target.value)}></Input>
+                    </Col>
+                    <Col>
+                        {FIND}<Input addonBefore="МИД ТСТ" size={"small"} style={{width: 250}}
+                                     value={request.level === LOOK_UP_LEVEL.SHOP ? request.code : ''}
+                                     onChange={(e) => onFilterShop(e.target.value)}></Input>
+                    </Col>
+                    <Col>
+                        {FIND}<Input addonBefore="ТИД Терминала" size={"small"} style={{width: 250}}
+                                     value={request.level === LOOK_UP_LEVEL.TERMINAL ? request.code : ''}
+                                     onChange={(e) => onFilterTerminal(e.target.value)}></Input>
+                    </Col>
+                </Row>
             </Header>
             <Content style={{padding: '10px 20px 10px'}}>
                 <Tree
                     showLine
-                    switcherIcon={<DownOutlined />}
+                    switcherIcon={<DownOutlined/>}
                     onSelect={onSelectTreeNone}
                     defaultExpandAll
                     //defaultExpandedKeys={['10']}

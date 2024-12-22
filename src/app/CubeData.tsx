@@ -51,7 +51,8 @@ function CubeData() {
                 </Header>
                 {projectionState === Projection.DEEP && <CubeLookDeep></CubeLookDeep>}
                 {projectionState === Projection.LOOK_UP && <CubeLookUp></CubeLookUp>}
-                {<Footer style={footerStyle}>{userState.login}, {userState.time.toLocaleString('ru-Ru')}</Footer>}
+                {<Footer style={footerStyle}>{userState.login}, {userState.time.toLocaleString('ru-Ru')}, {'стенд ' + process.env.REACT_APP_STAND}
+                </Footer>}
             </div>}
             {userState.login.length === 0 && <div>Необходимо ввести <Link to={'/login'}>логин</Link></div>}
         </Layout>

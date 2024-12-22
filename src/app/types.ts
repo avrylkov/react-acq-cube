@@ -206,10 +206,3 @@ export class UserState {
     time: Date
 }
 
-export const URL_DEEP = 'http://localhost:8081/deep'
-export const URL_LOOK_UP = 'http://localhost:8081/look-up'
-export const MEDIA_TYPE = 'application/json'
-
-// export const URL_DEEP = 'https://functions.yandexcloud.net/d4eqh0ifdrcs2sakrct0?integration=raw'
-//export const URL_LOOK_UP = 'http://localhost:8081/deep'
-// export const MEDIA_TYPE = 'text/plain'
