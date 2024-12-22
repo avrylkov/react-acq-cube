@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/react-acq-cube/static/css/main.b3fcb467.css",
-    "main.js": "/react-acq-cube/static/js/main.fd7bae15.js",
+    "main.js": "/react-acq-cube/static/js/main.3c49f342.js",
     "static/js/453.5f35dede.chunk.js": "/react-acq-cube/static/js/453.5f35dede.chunk.js",
     "index.html": "/react-acq-cube/index.html",
     "main.b3fcb467.css.map": "/react-acq-cube/static/css/main.b3fcb467.css.map",
-    "main.fd7bae15.js.map": "/react-acq-cube/static/js/main.fd7bae15.js.map",
+    "main.3c49f342.js.map": "/react-acq-cube/static/js/main.3c49f342.js.map",
     "453.5f35dede.chunk.js.map": "/react-acq-cube/static/js/453.5f35dede.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.b3fcb467.css",
-    "static/js/main.fd7bae15.js"
+    "static/js/main.3c49f342.js"
   ]
 }
