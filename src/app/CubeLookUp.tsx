@@ -25,10 +25,12 @@ import {FIND, headerStyleLookUp} from "./Style";
 import {useDispatch, useSelector} from "react-redux";
 import {setDeepRequest, setLookUpRequest, setProjection} from "../redux/store";
 
+const REQUEST_CODE_LENGTH = 3;
+
 function CubeLookUp() {
 
-    const loading = useRef<boolean>(false);
     const request: RequestCubeLookUp = useSelector((state: any) => state.lookUpRequest);
+    const loading = useRef<boolean>(isLoading(request));
     const dispatch = useDispatch();
 
     const [tbs, setTbs] = useState<TreeData[]>([]);
@@ -36,8 +38,6 @@ function CubeLookUp() {
     const expandedKeys = useRef<string[]>([])
     const total = useRef(0);
     const currentPage = useRef(1);
-
-    const REQUEST_CODE_LENGTH = 3;
 
     function getMetric() {
         let url = process.env.REACT_APP_URL_LOOK_UP ? process.env.REACT_APP_URL_LOOK_UP : '-'
@@ -295,7 +295,7 @@ function CubeLookUp() {
             </Header>
             <Content style={{padding: '10px 20px 10px'}}>
                 <Spin size="large" style={{marginLeft : '15%'}} spinning={loading.current}>
-                    {(!loading.current && request.code.length < REQUEST_CODE_LENGTH) && 'Поиск от 3х символов..'}</Spin>
+                    {(!loading.current && request.code.length < REQUEST_CODE_LENGTH) && <p className={'spin-content'}>Поиск от 3х символов..</p>}</Spin>
                 <Tree
                     showLine
                     switcherIcon={<DownOutlined/>}
