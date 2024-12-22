@@ -1,4 +1,4 @@
-import {Col, Input, Pagination, PaginationProps, Row, Tree, TreeProps} from "antd";
+import {Col, Input, Pagination, PaginationProps, Row, Spin, Tree, TreeProps} from "antd";
 import {DownOutlined} from '@ant-design/icons';
 import React, {useEffect, useRef, useState} from "react";
 import {
@@ -15,7 +15,7 @@ import {
     RequestCubeDeepCode,
     RequestCubeDeepName,
     RequestCubeLookUp,
-    ShopTreeData,
+    ShopTreeData, sleep,
     TbTreeData,
     TerminalTreeData,
     TreeData
@@ -27,8 +27,7 @@ import {setDeepRequest, setLookUpRequest, setProjection} from "../redux/store";
 
 function CubeLookUp() {
 
-    // const [request, setRequest] = useState<RequestCubeLookUp>({organization:'', contract:'', shop:'', terminal: '',
-    //     pageInfo: {pageNumber : 1, pageSize : PAGE_SIZE}});
+    const loading = useRef<boolean>(false);
     const request: RequestCubeLookUp = useSelector((state: any) => state.lookUpRequest);
     const dispatch = useDispatch();
 
@@ -37,6 +36,8 @@ function CubeLookUp() {
     const expandedKeys = useRef<string[]>([])
     const total = useRef(0);
     const currentPage = useRef(1);
+
+    const REQUEST_CODE_LENGTH = 3;
 
     function getMetric() {
         let url = process.env.REACT_APP_URL_LOOK_UP ? process.env.REACT_APP_URL_LOOK_UP : '-'
@@ -59,6 +60,24 @@ function CubeLookUp() {
                 return []
             })
     }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await sleep(250);
+            getMetric().then(data => {
+                //debugger
+                expandedKeys.current = getKeys(data)
+                setTbs(data)
+                tbsRef.current = data
+                loading.current = false
+                //console.log(metrics)
+            })
+
+        };
+        if (isLoading(request)) {
+            fetchData();
+        }
+    }, [request]);
 
     function mapTreeTb(pageData: PageDateLookUp): TreeData[] {
         let tbData: TbTreeData[] = pageData.dataCubes;
@@ -103,22 +122,6 @@ function CubeLookUp() {
             }
         )
     }
-
-    useEffect(() => {
-        const fetchData = async () => {
-            getMetric().then(data => {
-                //debugger
-                expandedKeys.current = getKeys(data)
-                setTbs(data)
-                tbsRef.current = data
-                //console.log(metrics)
-            })
-
-        };
-        if (request.code.length > 2) {
-            fetchData();
-        }
-    }, [request]);
 
     function getKeys(treeData: TreeData[]): string[] {
         let find = treeData
@@ -220,7 +223,7 @@ function CubeLookUp() {
             ...request, level: LOOK_UP_LEVEL.CONTRACT, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
         }
-        doRequest(rq)
+        doNewRequest(rq)
     }
 
     function onFilterOrganization(value: string) {
@@ -228,7 +231,7 @@ function CubeLookUp() {
             ...request, level: LOOK_UP_LEVEL.ORGANIZATION, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
         }
-        doRequest(rq)
+        doNewRequest(rq)
     }
 
     function onFilterShop(value: string) {
@@ -236,7 +239,7 @@ function CubeLookUp() {
             ...request, level: LOOK_UP_LEVEL.SHOP, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
         }
-        doRequest(rq)
+        doNewRequest(rq)
     }
 
     function onFilterTerminal(value: string) {
@@ -244,18 +247,24 @@ function CubeLookUp() {
             ...request, level: LOOK_UP_LEVEL.TERMINAL, code: value,
             pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: 1}
         }
-        doRequest(rq)
+        doNewRequest(rq)
     }
 
     const onChangeCurrentPage: PaginationProps['onChange'] = (page) => {
         let rq: RequestCubeLookUp = {...request, pageInfo: {pageSize: LOOK_UP_PAGE_SIZE, pageNumber: page}}
-        doRequest(rq)
+        doNewRequest(rq)
     };
 
-    function doRequest(rq: RequestCubeLookUp) {
+    function doNewRequest(rq: RequestCubeLookUp) {
+        if (isLoading(rq)) {
+            loading.current = true
+        }
         currentPage.current = rq.pageInfo.pageNumber;
         dispatch(setLookUpRequest(rq))
-        //setRequest(rq)
+    }
+
+    function isLoading(rq: RequestCubeLookUp) {
+        return rq.code.length >= REQUEST_CODE_LENGTH
     }
 
     return (
@@ -285,6 +294,8 @@ function CubeLookUp() {
                 </Row>
             </Header>
             <Content style={{padding: '10px 20px 10px'}}>
+                <Spin size="large" style={{marginLeft : '15%'}} spinning={loading.current}>
+                    {(!loading.current && request.code.length < REQUEST_CODE_LENGTH) && 'Поиск от 3х символов..'}</Spin>
                 <Tree
                     showLine
                     switcherIcon={<DownOutlined/>}

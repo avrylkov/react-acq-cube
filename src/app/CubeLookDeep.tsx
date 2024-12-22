@@ -310,8 +310,7 @@ function CubeLookDeep() {
 
             <Content style={{padding: '10px 20px 10px'}}>
                 <span>{RequestCubeDeepName[request.code].child}</span>
-                <Spin size="large" style={{marginLeft : '35%'}} spinning={loading.current}>
-                </Spin>
+                <Spin size="large" style={{marginLeft : '35%'}} spinning={loading.current}></Spin>
                 {
                     metrics.map((metric, index) => (
                         <Card title={<a onClick={(e) => onCardMetricTitleClick(metric.code)}>{(index + 1) + ') ' + metric.code}</a>}  size="small" style={{margin: '0px 0px 10px'}}>
