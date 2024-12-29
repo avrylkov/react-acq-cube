@@ -13,7 +13,7 @@ import {
     RequestCubeDeepName,
     RequestCubeLookUp,
     sleep,
-    SortDirection,
+    SortDirection, SortInfo,
     Stack
 } from "./types";
 import {Content, Header} from "antd/es/layout/layout";
@@ -49,7 +49,7 @@ function CubeLookDeep() {
     const prevRequests = useRef(new Stack<RequestCubeDeep>(request));
 
     const [sortDirection, setSortDirection] = useState<SortDirection>(SortDirection.ASC);
-    const selectedMetric = useRef<string>()
+    const [selectedMetric, setSelectedMetric] = useState<string>()
     const total = useRef(0);
     const currentPage = useRef(1);
 
@@ -96,7 +96,6 @@ function CubeLookDeep() {
             prevRequests.current.push(newRq)
         }
         currentPage.current = newRq.pageInfo.pageNumber
-        //setRequest(newRq)
         dispatch(setDeepRequest(newRq))
     }
 
@@ -130,41 +129,54 @@ function CubeLookDeep() {
     }
 
     function onSortMetric(metricName: string) {
-        selectedMetric.current = metricName
-        sortMetric(sortDirection)
+        setSelectedMetric(metricName)
+        sortMetric(metricName, sortDirection)
     }
 
     function onSortDirection() {
         switch (sortDirection) {
             case SortDirection.DESC:
-                sortMetric(SortDirection.ASC)
+                setSortDirection(SortDirection.ASC)
+                sortMetric(selectedMetric, SortDirection.ASC)
                 break
             case SortDirection.ASC:
-                sortMetric(SortDirection.DESC)
+                setSortDirection(SortDirection.DESC)
+                sortMetric(selectedMetric, SortDirection.DESC)
                 break
         }
     }
 
-    function sortMetric(direction: SortDirection) {
-        setSortDirection(direction)
-
-        function compareMetricFunc(a: Metric, b: Metric) {
-            let findA = a.metrics.find((metricValue) => metricValue.name === selectedMetric.current);
-            let findB = b.metrics.find((metricValue) => metricValue.name === selectedMetric.current);
-            if (findA !== undefined && findB !== undefined) {
-                if (findA.value < findB.value) {
-                    return direction === SortDirection.ASC ? -1 : 1;
-                }
-                if (findA.value > findB.value) {
-                    return direction === SortDirection.ASC ? 1 : -1;
-                }
-            }
-            return 0;
+    function sortMetric(metricName: string | undefined, direction: SortDirection) {
+        if (metricName !== undefined) {
+            currentPage.current = 1;
+            let pageInfo: PageInfo = {pageSize: DEEP_PAGE_SIZE, pageNumber: 1}
+            let sortInfo: SortInfo = {metricName: metricName, ascending: direction === SortDirection.ASC}
+            let rq: RequestCubeDeep = {...request, pageInfo: pageInfo, sortInfo: sortInfo}
+            doNewRequest(rq, false)
         }
-
-        metrics.sort(compareMetricFunc)
-        setMetrics(metrics.splice(0))
     }
+
+    // JS version
+    // function sortMetric(direction: SortDirection) {
+    //     setSortDirection(direction)
+    //
+    //     function compareMetricFunc(a: Metric, b: Metric) {
+    //         let findA = a.metrics.find((metricValue) => metricValue.name === selectedMetric.current);
+    //         let findB = b.metrics.find((metricValue) => metricValue.name === selectedMetric.current);
+    //         if (findA !== undefined && findB !== undefined) {
+    //             if (findA.value < findB.value) {
+    //                 return direction === SortDirection.ASC ? -1 : 1;
+    //             }
+    //             if (findA.value > findB.value) {
+    //                 return direction === SortDirection.ASC ? 1 : -1;
+    //             }
+    //         }
+    //         return 0;
+    //     }
+    //
+    //     metrics.sort(compareMetricFunc)
+    //     setMetrics(metrics.splice(0))
+    // }
 
     function getMetricsNameForSelect() {
         let metric = metrics.find((v) => v.code.length > 0);
@@ -174,7 +186,8 @@ function CubeLookDeep() {
     }
 
     function onFilter(value: string) {
-        let rq = {...request, codeFilter: value}
+        let pageInfo: PageInfo = {pageSize: DEEP_PAGE_SIZE, pageNumber: 1}
+        let rq = {...request, pageInfo: pageInfo, codeFilter: value}
         doNewRequest(rq, false)
     }
 
@@ -297,6 +310,7 @@ function CubeLookDeep() {
                             <Select
                                 size={"small"}
                                 style={{width: '50%'}}
+                                value={selectedMetric}
                                 onChange={onSortMetric}
                                 options={getMetricsNameForSelect()}/>
                         </Tooltip>
